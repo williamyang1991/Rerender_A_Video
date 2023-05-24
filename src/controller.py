@@ -1,5 +1,6 @@
-import torch
 import gc
+
+import torch
 import torch.nn.functional as F
 
 from flow.flow_utils import flow_warp
@@ -52,7 +53,8 @@ class AttentionControl():
                 self.step_store['previous'].append(context.detach())
             if self.update:
                 tmp = context.clone().detach()
-            if self.restore and self.cur_step <= self.total_step * self.restore_step:
+            if self.restore and \
+                    self.cur_step <= self.total_step * self.restore_step:
                 context = torch.cat(
                     (self.step_store['first'][self.cur_index],
                      self.step_store['previous'][self.cur_index]),
@@ -76,12 +78,9 @@ class AttentionControl():
                     2 * self.cur_step +
                     1] + self.step_store['first_ada'][2 * self.cur_step]
             if self.cur_step <= self.total_step * self.warp_step:
-                #print('replace x0 at', self.cur_step)
                 pre = self.step_store['x0_previous'][self.cur_step]
                 x0 = flow_warp(pre, self.flow, mode='nearest') * self.mask + (
                     1 - self.mask) * x0
-                #pre = F.interpolate(self.step_store['x0_previous'][self.cur_step], scale_factor=8)
-                #x0 = F.interpolate(flow_warp(pre, self.flow), scale_factor=1./8, mode='nearest') * self.mask + (1-self.mask) * x0
         if self.updatex0:
             self.step_store['x0_previous'][self.cur_step] = tmp
         return x0
