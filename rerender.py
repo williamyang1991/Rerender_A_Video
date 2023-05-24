@@ -1,26 +1,6 @@
-from safetensors.torch import load_file
-
-import sys
+import argparse
+import json
 import os
-
-cur_dir = os.path.dirname(os.path.abspath(__file__))
-gmflow_dir = os.path.join(cur_dir, 'deps/gmflow')
-controlnet_dir = os.path.join(cur_dir, 'deps/ControlNet')
-sys.path.insert(0, gmflow_dir)
-sys.path.insert(0, controlnet_dir)
-
-from deps.gmflow.gmflow.gmflow import GMFlow
-
-from deps.ControlNet.share import *
-from deps.ControlNet.annotator.util import resize_image, HWC3
-from deps.ControlNet.annotator.hed import HEDdetector
-from deps.ControlNet.annotator.canny import CannyDetector
-from deps.ControlNet.cldm.model import create_model, load_state_dict
-from deps.ControlNet.cldm.cldm import ControlLDM
-from src.ddim_v_hacked import DDIMVSampler
-from src.controller import AttentionControl
-from src.img_util import find_flat_region, numpy2tensor
-from flow.flow_utils import get_warped_and_mask
 
 import cv2
 import einops
@@ -28,33 +8,41 @@ import numpy as np
 import torch
 import torch.nn.functional as F
 import torchvision.transforms as T
-
+from blendmodes.blend import BlendType, blendLayers
 from PIL import Image
 from pytorch_lightning import seed_everything
-import os
-
-from blendmodes.blend import blendLayers, BlendType
+from safetensors.torch import load_file
 from skimage import exposure
-import json
-import argparse
+
+import deps.ControlNet.share  # noqa: F401
+# Append deps to path
+import src.path_util  # noqa: F401
+from deps.ControlNet.annotator.canny import CannyDetector
+from deps.ControlNet.annotator.hed import HEDdetector
+from deps.ControlNet.annotator.util import HWC3, resize_image
+from deps.ControlNet.cldm.cldm import ControlLDM
+from deps.ControlNet.cldm.model import create_model, load_state_dict
+from deps.gmflow.gmflow.gmflow import GMFlow
+from flow.flow_utils import get_warped_and_mask
+from src.controller import AttentionControl
+from src.ddim_v_hacked import DDIMVSampler
+from src.img_util import find_flat_region, numpy2tensor
 
 
 def setup_color_correction(image):
-    #logging.info("Calibrating color correction.")
     correction_target = cv2.cvtColor(np.asarray(image.copy()),
                                      cv2.COLOR_RGB2LAB)
     return correction_target
 
 
 def apply_color_correction(correction, original_image):
-    #logging.info("Applying color correction.")
     image = Image.fromarray(
         cv2.cvtColor(
             exposure.match_histograms(cv2.cvtColor(np.asarray(original_image),
                                                    cv2.COLOR_RGB2LAB),
                                       correction,
                                       channel_axis=2),
-            cv2.COLOR_LAB2RGB).astype("uint8"))
+            cv2.COLOR_LAB2RGB).astype('uint8'))
 
     image = blendLayers(image, original_image, BlendType.LUMINOSITY)
 
@@ -63,17 +51,17 @@ def apply_color_correction(correction, original_image):
 
 def main(args):
     video_cfg = 'videos.json'
-    video_trans_cfg = "video_trans.json"
+    video_trans_cfg = 'video_trans.json'
     with open(video_cfg, 'r') as fp:
         video_cfg = json.load(fp)
     with open(video_trans_cfg, 'r') as fp:
         video_trans_cfg = json.load(fp)
     video_list = video_cfg['list']
     diffusion_models = video_trans_cfg['models']
-    task_config = video_trans_cfg["tasks"][args.tid]
+    task_config = video_trans_cfg['tasks'][args.tid]
 
-    os.makedirs(task_config["o_tmp_dir"], exist_ok=True)
-    os.makedirs(task_config["o_dir"], exist_ok=True)
+    os.makedirs(task_config['o_tmp_dir'], exist_ok=True)
+    os.makedirs(task_config['o_dir'], exist_ok=True)
 
     blur = T.GaussianBlur(kernel_size=(9, 9), sigma=(18, 18))
     totensor = T.PILToTensor()
@@ -84,7 +72,11 @@ def main(args):
         canny_detector = CannyDetector()
         low_threshold = task_config.get('canny_low', 100)
         high_threshold = task_config.get('canny_high', 200)
-        detector = lambda x: canny_detector(x, low_threshold, high_threshold)
+
+        def apply_canny(x):
+            canny_detector(x, low_threshold, high_threshold)
+
+        detector = apply_canny
 
     model: ControlLDM = create_model('./models/cldm_v15.yaml').cpu()
     if task_config['control_type'] == 'HED':
@@ -131,7 +123,7 @@ def main(args):
     flow_model.load_state_dict(weights, strict=False)
     flow_model.eval()
 
-    img_dir = video_list[task_config["v_idx"]]["dir"] + '/video'
+    img_dir = video_list[task_config['v_idx']]['dir'] + '/video'
     frame_count = task_config['frame_count']
     frame_interval = task_config['interval']
 
@@ -171,12 +163,13 @@ def main(args):
         img = resize_image(HWC3(frame), image_resolution)
         H, W, C = img.shape
 
-        if color_preserve:
-            img_ = numpy2tensor(img)
-        else:
-            img_ = apply_color_correction(color_corrections,
-                                          Image.fromarray(img))
-            img_ = totensor(img_).unsqueeze(0)[:, :3] / 127.5 - 1
+        img_ = numpy2tensor(img)
+        # if color_preserve:
+        #     img_ = numpy2tensor(img)
+        # else:
+        #     img_ = apply_color_correction(color_corrections,
+        #                                   Image.fromarray(img))
+        #     img_ = totensor(img_).unsqueeze(0)[:, :3] / 127.5 - 1
         encoder_posterior = model.encode_first_stage(img_.cuda())
         x0 = model.get_first_stage_encoding(encoder_posterior).detach()
 
@@ -189,15 +182,15 @@ def main(args):
         control = torch.stack([control for _ in range(num_samples)], dim=0)
         control = einops.rearrange(control, 'b h w c -> b c h w').clone()
         cond = {
-            "c_concat": [control],
-            "c_crossattn": [
+            'c_concat': [control],
+            'c_crossattn': [
                 model.get_learned_conditioning([prompt + ', ' + a_prompt] *
                                                num_samples)
             ]
         }
         un_cond = {
-            "c_concat": [control],
-            "c_crossattn":
+            'c_concat': [control],
+            'c_crossattn':
             [model.get_learned_conditioning([n_prompt] * num_samples)]
         }
         shape = (4, H // 8, W // 8)
@@ -261,8 +254,8 @@ def main(args):
         control = torch.from_numpy(detected_map.copy()).float().cuda() / 255.0
         control = torch.stack([control for _ in range(num_samples)], dim=0)
         control = einops.rearrange(control, 'b h w c -> b c h w').clone()
-        cond["c_concat"] = [control]
-        un_cond["c_concat"] = [control]
+        cond['c_concat'] = [control]
+        un_cond['c_concat'] = [control]
 
         image1 = torch.from_numpy(pre_img).permute(2, 0, 1).float()
         image2 = torch.from_numpy(img).permute(2, 0, 1).float()
@@ -355,8 +348,11 @@ def main(args):
                 else:
                     masks += [mask * 0.5]
 
-            #xtrg = ((1-mask_x) * (xtrg + xtrg - xtrg_rec) + mask_x * samples) * mask       # mask 3
-            #xtrg = (xtrg + 1 * (xtrg - xtrg_rec)) * mask          # mask 2
+            # mask 3
+            # xtrg = ((1-mask_x) *
+            #         (xtrg + xtrg - xtrg_rec) + mask_x * samples) * mask
+            # mask 2
+            # xtrg = (xtrg + 1 * (xtrg - xtrg_rec)) * mask
             xtrg = (xtrg + (1 - mask_x) * (xtrg - xtrg_rec)) * mask  # mask 1
 
             tasks = 'keepstyle, keepx0'

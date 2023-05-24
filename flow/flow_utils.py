@@ -1,15 +1,15 @@
+import os
+import sys
+
 import torch
 import torch.nn.functional as F
-import sys
-import os
 
 parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 gmflow_dir = os.path.join(parent_dir, 'deps/gmflow')
 sys.path.insert(0, gmflow_dir)
 
-from gmflow.gmflow import GMFlow
-from utils.utils import InputPadder
-
+from gmflow.gmflow import GMFlow  # noqa: E702 E402 F401
+from utils.utils import InputPadder  # noqa: E702 E402
 
 
 def coords_grid(b, h, w, homogeneous=False, device=None):
@@ -86,7 +86,8 @@ def forward_backward_consistency_check(fwd_flow,
                                        alpha=0.01,
                                        beta=0.5):
     # fwd_flow, bwd_flow: [B, 2, H, W]
-    # alpha and beta values are following UnFlow (https://arxiv.org/abs/1711.07837)
+    # alpha and beta values are following UnFlow
+    # (https://arxiv.org/abs/1711.07837)
     assert fwd_flow.dim() == 4 and bwd_flow.dim() == 4
     assert fwd_flow.size(1) == 2 and bwd_flow.size(1) == 2
     flow_mag = torch.norm(fwd_flow, dim=1) + torch.norm(bwd_flow,
