@@ -1,0 +1,31 @@
+{
+    "models": [
+        {
+            "id": 0,
+            "path": "./models/revAnimated_v11.safetensors",
+            "type": "safetensor"
+        }
+    ],
+    "tasks": [
+        {
+            "id": 0,
+            "v_idx": 0,
+            "model_id": 0,
+            "better_vae": true,
+            "vae": "",
+            "o_dir": "videos/woman1/keys0",
+            "o_tmp_dir": "videos/woman1/tmp_out",
+            "frame_count": 92,
+            "interval": 10,
+            "prompt": "a beautiful woman in CG style",
+            "a_prompt": "best quality, extremely detailed",
+            "n_prompt": "longbody, lowres, bad anatomy, bad hands, missing fingers, extra digit, fewer digits, cropped, worst quality, low quality",
+            "x0_strength": 0.25,
+            "control_type": "canny",
+            "canny_low": 50,
+            "canny_high": 100,
+            "control_strength": 0.7,
+            "seed": 0
+        }
+    ]
+}
