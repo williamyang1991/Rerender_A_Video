@@ -15,7 +15,6 @@ from safetensors.torch import load_file
 from skimage import exposure
 
 import deps.ControlNet.share  # noqa: F401
-# Append deps to path
 import src.path_util  # noqa: F401
 from deps.ControlNet.annotator.canny import CannyDetector
 from deps.ControlNet.annotator.hed import HEDdetector
@@ -27,6 +26,8 @@ from flow.flow_utils import get_warped_and_mask
 from src.controller import AttentionControl
 from src.ddim_v_hacked import DDIMVSampler
 from src.img_util import find_flat_region, numpy2tensor
+
+# Append deps to path
 
 
 def setup_color_correction(image):
@@ -74,7 +75,7 @@ def main(args):
         high_threshold = task_config.get('canny_high', 200)
 
         def apply_canny(x):
-            canny_detector(x, low_threshold, high_threshold)
+            return canny_detector(x, low_threshold, high_threshold)
 
         detector = apply_canny
 
