@@ -84,8 +84,10 @@ def process_one_sequence(i, video_sequence: VideoSequence):
                 for g, w in zip(guides, weights):
                     cmd += ' ' + g.get_cmd(j, w)
 
-                cmd += f' -output {os.path.abspath(output_seq[j])} -searchvoteiters 12 -patchmatchiters 6'
-                #print(cmd)
+                cmd += (f' -output {os.path.abspath(output_seq[j])}'
+                        ' -searchvoteiters 12 -patchmatchiters 6')
+                if OPEN_EBSYNTH_LOG:
+                    print(cmd)
                 subprocess.run(cmd,
                                shell=True,
                                capture_output=not OPEN_EBSYNTH_LOG)
