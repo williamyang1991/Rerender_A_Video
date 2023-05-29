@@ -28,6 +28,25 @@ https://github.com/williamyang1991/Rerender_A_Video/assets/18130694/7521be69-57c
 
 ## (2) Results
 
+### Key frame translation
+
+<table class="center">
+<tr>
+  <td><img src="https://github.com/williamyang1991/Rerender_A_Video/assets/18130694/4989d95f-4fd0-4777-b918-51fd0bcf318a" raw=true><img src="https://github.com/williamyang1991/Rerender_A_Video/assets/18130694/394dcbeb-f056-4731-9918-6af0d8d16596" raw=true></td>
+  <td><img src="https://github.com/williamyang1991/Rerender_A_Video/assets/18130694/09425268-d4ae-43f6-87f8-b3a57e322bfe" raw=true><img src="https://github.com/williamyang1991/Rerender_A_Video/assets/18130694/e306ed0a-66da-4ddf-8b98-55c0e0cd7ac7" raw=true></td>
+  <td><img src="https://github.com/williamyang1991/Rerender_A_Video/assets/18130694/f0f7aa12-b280-4cf9-af4e-5e7d53104b5f" raw=true><img src="https://github.com/williamyang1991/Rerender_A_Video/assets/18130694/d0e2c931-194f-4d91-b389-a725f020eb3b" raw=true></td>
+  <td><img src="https://github.com/williamyang1991/Rerender_A_Video/assets/18130694/adc77a95-53ab-4d4e-849c-fb12c8855aca" raw=true><img src="https://github.com/williamyang1991/Rerender_A_Video/assets/18130694/e7094f81-71ae-4837-ac3f-bfc43530b0ae" raw=true></td>
+</tr>
+<tr>
+  <td width=27.5% align="center">white ancient Greek sculpture, Venus de Milo, light pink and blue background</td>
+  <td width=27.5% align="center">a handsome Greek man</td>
+  <td width=21.5% align="center">a traditional mountain in chinese ink wash painting</td>
+  <td width=23.5% align="center">a cartoon tiger</td>
+</tr>
+</table>
+
+### Full video translation
+
 Text-guided virtual character generation.
 
 https://github.com/williamyang1991/Rerender_A_Video/assets/18130694/f0e39ed5-080d-4aec-9a6b-fe81b37b29fe
