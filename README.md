@@ -16,6 +16,8 @@
 - **Zero-shot**: no training or fine-tuning required.
 - **Flexibility**: compatible with off-the-shelf models (e.g., [ControlNet](https://github.com/lllyasviel/ControlNet), [LoRA](https://civitai.com/)) for customized translation.
 
+https://github.com/williamyang1991/Rerender_A_Video/assets/18130694/7521be69-57c0-499b-859b-86368c14612d
+
 ## Updates
 
 - [05/2023] This website is created.
