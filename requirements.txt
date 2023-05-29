@@ -1,6 +1,7 @@
 addict==2.4.0
 albumentations==1.3.0
 basicsr==1.4.2
+blendmodes
 einops==0.3.0
 gradio==3.16.2
 imageio==2.9.0
@@ -20,4 +21,3 @@ torchmetrics==0.6.0
 transformers==4.19.2
 webdataset==0.2.5
 yapf==0.32.0
-blendmodes
