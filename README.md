@@ -1,6 +1,6 @@
 # Rerender A Video - Official PyTorch Implementation
 
-
+![Untitled](https://github.com/williamyang1991/Rerender_A_Video/assets/18130694/13b8538b-d321-477f-9887-b79e04982da6)
 
 <!--https://github.com/williamyang1991/Rerender_A_Video/assets/18130694/82c35efb-e86b-4376-bfbe-6b69159b8879-->
 
