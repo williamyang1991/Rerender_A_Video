@@ -1,6 +1,8 @@
 # Rerender A Video - Official PyTorch Implementation
 
-https://github.com/williamyang1991/Rerender_A_Video/assets/18130694/82c35efb-e86b-4376-bfbe-6b69159b8879
+
+
+<!--https://github.com/williamyang1991/Rerender_A_Video/assets/18130694/82c35efb-e86b-4376-bfbe-6b69159b8879-->
 
 
 **Rerender A Video: Zero-Shot Text-Guided Video-to-Video Translation**<br>
