@@ -4,3 +4,6 @@
 [submodule "deps/ControlNet"]
 	path = deps/ControlNet
 	url = git@github.com:lllyasviel/ControlNet.git
+[submodule "deps/ebsynth"]
+	path = deps/ebsynth
+	url = git@github.com:SingleZombie/ebsynth.git

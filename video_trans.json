@@ -14,6 +14,7 @@
             "better_vae": true,
             "vae": "",
             "o_dir": "videos/woman1/keys0",
+            "o_video": "videos/woman1/blend.mp4",
             "o_tmp_dir": "videos/woman1/tmp_out",
             "frame_count": 92,
             "interval": 10,

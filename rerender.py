@@ -14,8 +14,8 @@ from pytorch_lightning import seed_everything
 from safetensors.torch import load_file
 from skimage import exposure
 
-import src.path_util  # noqa: F401
 import deps.ControlNet.share  # noqa: F401
+import src.path_util  # noqa: F401
 from deps.ControlNet.annotator.canny import CannyDetector
 from deps.ControlNet.annotator.hed import HEDdetector
 from deps.ControlNet.annotator.util import HWC3, resize_image
@@ -332,9 +332,8 @@ def main(args):
             blend_results_rec_new = model.decode_first_stage(xtrg_)
             tmp = (abs(blend_results_rec_new - blend_results).mean(
                 dim=1, keepdims=True) > 0.25).float()
-            mask_x = F.max_pool2d((F.interpolate(tmp,
-                                                 scale_factor=1 / 8.,
-                                                 mode='bilinear') > 0).float(),
+            mask_x = F.max_pool2d((F.interpolate(
+                tmp, scale_factor=1 / 8., mode='bilinear') > 0).float(),
                                   kernel_size=3,
                                   stride=1,
                                   padding=1)

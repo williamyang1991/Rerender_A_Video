@@ -1,6 +1,7 @@
 import os
 import sys
 
+import numpy as np
 import torch
 import torch.nn.functional as F
 
@@ -136,3 +137,75 @@ def get_warped_and_mask(flow_model,
             1).unsqueeze(0)
     warped_results = flow_warp(image3, bwd_flow)
     return warped_results, bwd_occ, bwd_flow
+
+
+class FlowCalc():
+
+    def __init__(
+            self,
+            model_path='deps/gmflow/pretrained/gmflow_sintel-0c07dcb3.pth'):
+        flow_model = GMFlow(
+            feature_channels=128,
+            num_scales=1,
+            upsample_factor=8,
+            num_head=1,
+            attention_type='swin',
+            ffn_dim_expansion=4,
+            num_transformer_layers=6,
+        ).to('cuda')
+
+        checkpoint = torch.load(model_path,
+                                map_location=lambda storage, loc: storage)
+        weights = checkpoint['model'] if 'model' in checkpoint else checkpoint
+        flow_model.load_state_dict(weights, strict=False)
+        flow_model.eval()
+        self.model = flow_model
+
+    @torch.no_grad()
+    def get_flow(self, image1, image2, save_path=None):
+        if save_path is not None and os.path.exists(save_path):
+            bwd_flow = read_flow(save_path)
+            return bwd_flow
+
+        image1 = torch.from_numpy(image1).permute(2, 0, 1).float()
+        image2 = torch.from_numpy(image2).permute(2, 0, 1).float()
+        padder = InputPadder(image1.shape, padding_factor=8)
+        image1, image2 = padder.pad(image1[None].cuda(), image2[None].cuda())
+        results_dict = self.model(image1,
+                                  image2,
+                                  attn_splits_list=[2],
+                                  corr_radius_list=[-1],
+                                  prop_radius_list=[-1],
+                                  pred_bidir_flow=True)
+        flow_pr = results_dict['flow_preds'][-1]  # [B, 2, H, W]
+        bwd_flow = padder.unpad(flow_pr[1]).unsqueeze(0)  # [1, 2, H, W]
+        if save_path is not None:
+            flow_np = bwd_flow.cpu().numpy()
+            np.save(save_path, flow_np)
+
+        return bwd_flow
+
+    def warp(self, img, flow, mode='bilinear'):
+        expand = False
+        if len(img.shape) == 2:
+            expand = True
+            img = np.expand_dims(img, 2)
+
+        img = torch.from_numpy(img).permute(2, 0, 1).unsqueeze(0)
+        dtype = img.dtype
+        img = img.to(torch.float)
+        res = flow_warp(img, flow, mode=mode)
+        res = res.to(dtype)
+        res = res[0].cpu().permute(1, 2, 0).numpy()
+        if expand:
+            res = res[:, :, 0]
+        return res
+
+
+def read_flow(save_path):
+    flow_np = np.load(save_path)
+    bwd_flow = torch.from_numpy(flow_np)
+    return bwd_flow
+
+
+flow_calc = FlowCalc()
