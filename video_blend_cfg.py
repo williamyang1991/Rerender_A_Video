@@ -29,7 +29,7 @@ use_e = '-ne' if args.ne else ''
 o_video_cmd = f'--output {o_video}' if len(o_video) > 0 else ''
 
 cmd = (
-    f'python video_blend.py {video_base_dir} --beg 1 --end {end_frame} --itv'
+    f'python video_blend.py {video_base_dir} --beg 1 --end {end_frame} --itv '
     f'{interval} --key {key_dir} {use_e} {o_video_cmd} --fps {fps}')
 print(cmd)
 os.system(cmd)
