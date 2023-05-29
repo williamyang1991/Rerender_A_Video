@@ -50,7 +50,7 @@ https://github.com/williamyang1991/Rerender_A_Video/assets/18130694/7521be69-57c
   <td><img src="https://github.com/williamyang1991/Rerender_A_Video/assets/18130694/e5315750-9563-4d90-9e04-6514d503cbc5" raw=true><img src="https://github.com/williamyang1991/Rerender_A_Video/assets/18130694/00ed3ff1-6844-4201-a43f-b5ebb437165c" raw=true></td>
   <td><img src="https://github.com/williamyang1991/Rerender_A_Video/assets/18130694/a596b5c8-3dc2-4e67-80a9-1ed0b4ac3048" raw=true><img src="https://github.com/williamyang1991/Rerender_A_Video/assets/18130694/12209312-f3cd-4c98-95bd-0b46d0993c01" raw=true></td>
   <td><img src="https://github.com/williamyang1991/Rerender_A_Video/assets/18130694/9957da0d-d76a-41c8-9f8f-c8a17fd3c243" raw=true><img src="https://github.com/williamyang1991/Rerender_A_Video/assets/18130694/017c2256-bd06-416e-894a-c60cda6048e7" raw=true></td>
-  <td><img src="https://github.com/williamyang1991/Rerender_A_Video/assets/18130694/4e3bdf8a-0c9a-4b5c-877e-70a901a970f0" raw=true><img src="https://github.com/williamyang1991/Rerender_A_Video/assets/18130694/f1d0cb1b-33f4-45c4-8c68-f78542ef8036" raw=true></td>
+  <td><img src="https://github.com/williamyang1991/Rerender_A_Video/assets/18130694/f1d0cb1b-33f4-45c4-8c68-f78542ef8036" raw=true><img src="https://github.com/williamyang1991/Rerender_A_Video/assets/18130694/4e3bdf8a-0c9a-4b5c-877e-70a901a970f0" raw=true></td>
 </tr>
 <tr>
   <td width=26.0% align="center">a swan in chinese ink wash painting, monochrome</td>
