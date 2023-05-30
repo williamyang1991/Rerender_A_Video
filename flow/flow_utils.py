@@ -141,9 +141,7 @@ def get_warped_and_mask(flow_model,
 
 class FlowCalc():
 
-    def __init__(
-            self,
-            model_path='deps/gmflow/pretrained/gmflow_sintel-0c07dcb3.pth'):
+    def __init__(self, model_path='./models/gmflow_sintel-0c07dcb3.pth'):
         flow_model = GMFlow(
             feature_channels=128,
             num_scales=1,

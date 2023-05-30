@@ -14,7 +14,6 @@ from pytorch_lightning import seed_everything
 from safetensors.torch import load_file
 from skimage import exposure
 
-import deps.ControlNet.share  # noqa: F401
 import src.path_util  # noqa: F401
 from deps.ControlNet.annotator.canny import CannyDetector
 from deps.ControlNet.annotator.hed import HEDdetector
@@ -117,9 +116,8 @@ def main(args):
         num_transformer_layers=6,
     ).to('cuda')
 
-    checkpoint = torch.load(
-        'deps/gmflow/pretrained/gmflow_sintel-0c07dcb3.pth',
-        map_location=lambda storage, loc: storage)
+    checkpoint = torch.load('models/gmflow_sintel-0c07dcb3.pth',
+                            map_location=lambda storage, loc: storage)
     weights = checkpoint['model'] if 'model' in checkpoint else checkpoint
     flow_model.load_state_dict(weights, strict=False)
     flow_model.eval()
