@@ -1,5 +1,6 @@
-import platform
 import os
+import platform
+
 import requests
 
 
@@ -27,9 +28,9 @@ def build_ebsynth():
     os.system(cmd)
     os.chdir('../..')
     if os.path.exists('deps/ebsynth/bin/ebsynth'):
-        print("Ebsynth installed successfully.")
+        print('Ebsynth installed successfully.')
     else:
-        print("Failed to install Ebsynth.")
+        print('Failed to install Ebsynth.')
 
 
 def download(url, dir, name=None):
