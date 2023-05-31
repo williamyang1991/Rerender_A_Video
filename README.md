@@ -24,6 +24,38 @@ https://github.com/williamyang1991/Rerender_A_Video/assets/18130694/7521be69-57c
 
 ## Installation
 
+1. Clone the repository.
+
+```shell
+git clone git@github.com:williamyang1991/Rerender_A_Video.git --recursive
+cd Rerender_A_Video
+```
+
+2. If you have installed PyTorch CUDA, you can simply set up the environment with pip.
+
+```shell
+pip install -r requirements.txt
+```
+
+You can also create a new conda environment from scratch.
+
+```shell
+conda env create -f environment.yml
+conda activate rerender
+```
+
+3. Run the installation script. The required models will be downloaded in `./models`.
+
+```shell
+python install.py
+```
+
+4. You can run the demo with `rerender.py`
+
+```shell
+python rerender.py --cfg config/real2sculpture.json
+```
+
 ## (1) Inference
 
 ## (2) Results
