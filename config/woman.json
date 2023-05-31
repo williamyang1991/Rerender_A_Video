@@ -1,0 +1,19 @@
+{
+    "input": "videos/woman1.mp4",
+    "output": "videos/woman1/blend.mp4",
+    "work_dir": "videos/woman1",
+    "key_subdir": "keys",
+    "frame_count": 92,
+    "interval": 10,
+    "sd_model": "models/revAnimated_v11.safetensors",
+    "prompt": "a beautiful woman in CG style, best quality, extremely detailed",
+    "n_prompt": "longbody, lowres, bad anatomy, bad hands, missing fingers, extra digit, fewer digits, cropped, worst quality, low quality",
+    "x0_strength": 0.25,
+    "control_type": "canny",
+    "canny_low": 50,
+    "canny_high": 100,
+    "control_strength": 0.7,
+    "seed": 0,
+    "warp_step": 0.1,
+    "ada_ste0": 1.0
+}

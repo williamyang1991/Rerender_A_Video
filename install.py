@@ -60,7 +60,14 @@ def download_controlnet_hed():
     download(url, 'models')
 
 
+def download_vae():
+    url = ('https://huggingface.co/stabilityai/sd-vae-ft-mse-original'
+           '/resolve/main/vae-ft-mse-840000-ema-pruned.ckpt')
+    download(url, 'models')
+
+
 build_ebsynth()
 download_gmflow_ckpt()
 download_controlnet_canny()
 # download_controlnet_hed()
+download_vae()
