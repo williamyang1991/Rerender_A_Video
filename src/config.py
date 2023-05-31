@@ -1,7 +1,7 @@
-from typing import Optional
-
 import json
 import os
+from typing import Optional
+
 from src.video_util import get_frame_count, video_to_frame
 
 
@@ -20,13 +20,13 @@ class RerenderConfig:
                                interval: int = 10,
                                sd_model: Optional[str] = None,
                                n_prompt: str = '',
-                               control_type: str = 'canny',
+                               control_type: str = 'HED',
                                control_strength=1,
                                seed: int = -1,
                                image_resolution: int = 512,
-                               x0_strength: float = 0.1,
-                               warp_step: float = 0.3,
-                               ada_step: float = 0.8,
+                               x0_strength: float = -1,
+                               warp_step: float = 0.1,
+                               ada_step: float = 1.0,
                                **kwargs):
         self.input_path = input_path
         self.output_path = output_path
@@ -51,8 +51,8 @@ class RerenderConfig:
         self.n_prompt = n_prompt
         self.control_type = control_type
         if self.control_type == 'canny':
-            self.canny_low = kwargs.get("canny_low", 100)
-            self.canny_high = kwargs.get("canny_high", 200)
+            self.canny_low = kwargs.get('canny_low', 100)
+            self.canny_high = kwargs.get('canny_high', 200)
         self.control_strength = control_strength
         self.seed = seed
         self.image_resolution = image_resolution

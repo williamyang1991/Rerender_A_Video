@@ -39,7 +39,9 @@ def download(url, dir, name=None):
         name = url.split('/')[-1]
     path = os.path.join(dir, name)
     if not os.path.exists(path):
+        print(f'Install {name} ...')
         open(path, 'wb').write(requests.get(url).content)
+        print('Install successfully.')
 
 
 def download_gmflow_ckpt():

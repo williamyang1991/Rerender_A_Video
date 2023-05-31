@@ -22,10 +22,10 @@ from deps.ControlNet.cldm.cldm import ControlLDM
 from deps.ControlNet.cldm.model import create_model, load_state_dict
 from deps.gmflow.gmflow.gmflow import GMFlow
 from flow.flow_utils import get_warped_and_mask
+from src.config import RerenderConfig
 from src.controller import AttentionControl
 from src.ddim_v_hacked import DDIMVSampler
 from src.img_util import find_flat_region, numpy2tensor
-from src.config import RerenderConfig
 from src.video_util import frame_to_video, get_fps
 
 # Append deps to path
@@ -311,9 +311,8 @@ def rerender(cfg: RerenderConfig, first_img_only: bool, key_video_path: str):
             blend_results_rec_new = model.decode_first_stage(xtrg_)
             tmp = (abs(blend_results_rec_new - blend_results).mean(
                 dim=1, keepdims=True) > 0.25).float()
-            mask_x = F.max_pool2d((F.interpolate(tmp,
-                                                 scale_factor=1 / 8.,
-                                                 mode='bilinear') > 0).float(),
+            mask_x = F.max_pool2d((F.interpolate(
+                tmp, scale_factor=1 / 8., mode='bilinear') > 0).float(),
                                   kernel_size=3,
                                   stride=1,
                                   padding=1)
@@ -384,8 +383,8 @@ def postprocess(cfg: RerenderConfig, ne: bool):
     o_video_cmd = f'--output {o_video}'
 
     cmd = (
-        f'python video_blend.py {video_base_dir} --beg 1 --end {end_frame} --itv '
-        f'{interval} --key {key_dir} {use_e} {o_video_cmd} --fps {fps}')
+        f'python video_blend.py {video_base_dir} --beg 1 --end {end_frame} '
+        f'--itv {interval} --key {key_dir} {use_e} {o_video_cmd} --fps {fps}')
     print(cmd)
     os.system(cmd)
 
