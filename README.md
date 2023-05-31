@@ -37,14 +37,14 @@ cd Rerender_A_Video
 pip install -r requirements.txt
 ```
 
-You can also create a new conda environment.
+You can also create a new conda environment from scratch.
 
 ```shell
 conda env create -f environment.yml
 conda activate rerender
 ```
 
-3. Run the installation script. The required models will be downloaded in `./models'.
+3. Run the installation script. The required models will be downloaded in `./models`.
 
 ```shell
 python install.py
