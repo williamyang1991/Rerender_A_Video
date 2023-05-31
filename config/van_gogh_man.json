@@ -1,0 +1,18 @@
+{
+    "input": "videos/teacher.mp4",
+    "output": "videos/teacher/blend.mp4",
+    "work_dir": "videos/teacher",
+    "key_subdir": "keys",
+    "frame_count": 102,
+    "interval": 10,
+    "prompt": "a handsome man in van gogh painting, best quality, extremely detailed",
+    "n_prompt": "longbody, lowres, bad anatomy, bad hands, missing fingers, extra digit, fewer digits, cropped, worst quality, low quality",
+    "x0_strength": -1,
+    "control_type": "canny",
+    "canny_low": 50,
+    "canny_high": 100,
+    "control_strength": 0.7,
+    "seed": 0,
+    "warp_step": 0.1,
+    "ada_step": 0.8
+}

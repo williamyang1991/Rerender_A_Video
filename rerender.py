@@ -1,6 +1,6 @@
 import argparse
-import json
 import os
+import random
 
 import cv2
 import einops
@@ -14,7 +14,7 @@ from pytorch_lightning import seed_everything
 from safetensors.torch import load_file
 from skimage import exposure
 
-import src.path_util  # noqa: F401
+import src.import_util  # noqa: F401
 from deps.ControlNet.annotator.canny import CannyDetector
 from deps.ControlNet.annotator.hed import HEDdetector
 from deps.ControlNet.annotator.util import HWC3, resize_image
@@ -22,9 +22,11 @@ from deps.ControlNet.cldm.cldm import ControlLDM
 from deps.ControlNet.cldm.model import create_model, load_state_dict
 from deps.gmflow.gmflow.gmflow import GMFlow
 from flow.flow_utils import get_warped_and_mask
+from src.config import RerenderConfig
 from src.controller import AttentionControl
 from src.ddim_v_hacked import DDIMVSampler
 from src.img_util import find_flat_region, numpy2tensor
+from src.video_util import frame_to_video, get_fps
 
 # Append deps to path
 
@@ -49,29 +51,16 @@ def apply_color_correction(correction, original_image):
     return image
 
 
-def main(args):
-    video_cfg = 'videos.json'
-    video_trans_cfg = 'video_trans.json'
-    with open(video_cfg, 'r') as fp:
-        video_cfg = json.load(fp)
-    with open(video_trans_cfg, 'r') as fp:
-        video_trans_cfg = json.load(fp)
-    video_list = video_cfg['list']
-    diffusion_models = video_trans_cfg['models']
-    task_config = video_trans_cfg['tasks'][args.tid]
-
-    os.makedirs(task_config['o_tmp_dir'], exist_ok=True)
-    os.makedirs(task_config['o_dir'], exist_ok=True)
-
+def rerender(cfg: RerenderConfig, first_img_only: bool, key_video_path: str):
     blur = T.GaussianBlur(kernel_size=(9, 9), sigma=(18, 18))
     totensor = T.PILToTensor()
 
-    if task_config['control_type'] == 'HED':
+    if cfg.control_type == 'HED':
         detector = HEDdetector()
-    elif task_config['control_type'] == 'canny':
+    elif cfg.control_type == 'canny':
         canny_detector = CannyDetector()
-        low_threshold = task_config.get('canny_low', 100)
-        high_threshold = task_config.get('canny_high', 200)
+        low_threshold = cfg.canny_low
+        high_threshold = cfg.canny_high
 
         def apply_canny(x):
             return canny_detector(x, low_threshold, high_threshold)
@@ -79,31 +68,31 @@ def main(args):
         detector = apply_canny
 
     model: ControlLDM = create_model('./models/cldm_v15.yaml').cpu()
-    if task_config['control_type'] == 'HED':
+    if cfg.control_type == 'HED':
         model.load_state_dict(
             load_state_dict('./models/control_sd15_hed.pth', location='cuda'))
-    elif task_config['control_type'] == 'canny':
+    elif cfg.control_type == 'canny':
         model.load_state_dict(
             load_state_dict('./models/control_sd15_canny.pth',
                             location='cuda'))
     model = model.cuda()
 
-    if task_config['model_id'] >= 0:
-        model_cfg = diffusion_models[task_config['model_id']]
-        if model_cfg['type'] == 'safetensor':
-            model.load_state_dict(load_file(model_cfg['path']), strict=False)
-        elif model_cfg['type'] == 'ckpt':
-            model.load_state_dict(torch.load(model_cfg['path'])['state_dict'],
+    if cfg.sd_model is not None:
+        model_ext = os.path.splitext(cfg.sd_model)[1]
+        if model_ext == '.safetensors':
+            model.load_state_dict(load_file(cfg.sd_model), strict=False)
+        elif model_ext == '.ckpt' or model_ext == '.pth':
+            model.load_state_dict(torch.load(cfg.sd_model)['state_dict'],
                                   strict=False)
 
-    if len(task_config['vae']) > 0:
-        model.first_stage_model.load_state_dict(torch.load(
-            task_config['vae'])['state_dict'],
-                                                strict=False)
-    elif task_config['better_vae']:
+    try:
         model.first_stage_model.load_state_dict(torch.load(
             './models/vae-ft-mse-840000-ema-pruned.ckpt')['state_dict'],
                                                 strict=False)
+    except Exception:
+        print('Warning: We suggest you download the fine-tuned VAE',
+              'otherwise the generation quality will be degraded')
+
     ddim_v_sampler = DDIMVSampler(model)
 
     flow_model = GMFlow(
@@ -122,33 +111,34 @@ def main(args):
     flow_model.load_state_dict(weights, strict=False)
     flow_model.eval()
 
-    img_dir = video_list[task_config['v_idx']]['dir'] + '/video'
-    frame_count = task_config['frame_count']
-    frame_interval = task_config['interval']
+    img_dir = cfg.input_dir
+    frame_count = cfg.frame_count
+    frame_interval = cfg.interval
 
     num_samples = 1
-    image_resolution = 512
-    control_strength = task_config['control_strength']
-    # detect_resolution = 512
+    image_resolution = cfg.image_resolution
+    control_strength = cfg.control_strength
     ddim_steps = 20
     scale = 7.5
-    seed = task_config['seed']
-    eta = 0.0
-    x0_strength = task_config['x0_strength']
 
-    prompt = task_config['prompt']
-    a_prompt = task_config['a_prompt']
-    n_prompt = task_config['n_prompt']
+    seed = cfg.seed
+    if seed == -1:
+        seed = random.randint(0, 65535)
+    eta = 0.0
+
+    prompt = cfg.prompt
+    n_prompt = cfg.n_prompt
     model.control_scales = [control_strength] * 13
 
-    firstx0 = True
-    mask_step = [0.5, 0.8]
     style_update_freq = max(10, frame_interval)
     pixelfusion = True
     color_preserve = True
 
-    ada_step = task_config.get('ada_step', 1.8)
-    warp_step = task_config.get('warp_step', 0.1)
+    x0_strength = cfg.x0_strength
+    ada_step = cfg.ada_step
+    warp_step = cfg.warp_step
+    mask_step = [0.5, 0.8]
+    firstx0 = True
     controller = AttentionControl(ada_step, warp_step)
 
     imgs = sorted(os.listdir(img_dir))
@@ -175,17 +165,15 @@ def main(args):
         detected_map = detector(img)
         detected_map = HWC3(detected_map)
         # For visualization
-        detected = 255 - detected_map
+        detected_img = 255 - detected_map
 
         control = torch.from_numpy(detected_map.copy()).float().cuda() / 255.0
         control = torch.stack([control for _ in range(num_samples)], dim=0)
         control = einops.rearrange(control, 'b h w c -> b c h w').clone()
         cond = {
             'c_concat': [control],
-            'c_crossattn': [
-                model.get_learned_conditioning([prompt + ', ' + a_prompt] *
-                                               num_samples)
-            ]
+            'c_crossattn':
+            [model.get_learned_conditioning([prompt] * num_samples)]
         }
         un_cond = {
             'c_concat': [control],
@@ -196,18 +184,17 @@ def main(args):
 
         controller.set_task('initfirst')
         seed_everything(seed)
-        samples, intermediates = ddim_v_sampler.sample(
-            ddim_steps,
-            num_samples,
-            shape,
-            cond,
-            verbose=False,
-            eta=eta,
-            unconditional_guidance_scale=scale,
-            unconditional_conditioning=un_cond,
-            controller=controller,
-            x0=x0,
-            strength=x0_strength)
+        samples, _ = ddim_v_sampler.sample(ddim_steps,
+                                           num_samples,
+                                           shape,
+                                           cond,
+                                           verbose=False,
+                                           eta=eta,
+                                           unconditional_guidance_scale=scale,
+                                           unconditional_conditioning=un_cond,
+                                           controller=controller,
+                                           x0=x0,
+                                           strength=x0_strength)
         x_samples = model.decode_first_stage(samples)
         pre_result = x_samples
         pre_img = img
@@ -218,18 +205,17 @@ def main(args):
             einops.rearrange(x_samples, 'b c h w -> b h w c') * 127.5 +
             127.5).cpu().numpy().clip(0, 255).astype(np.uint8)
     color_corrections = setup_color_correction(Image.fromarray(x_samples[0]))
-    Image.fromarray(x_samples[0]).save(f'{task_config["o_tmp_dir"]}/tmp.jpg')
-    cv2.imwrite(f'{task_config["o_tmp_dir"]}/tmp_edge.jpg', detected)
+    Image.fromarray(x_samples[0]).save(os.path.join(cfg.first_dir,
+                                                    'first.jpg'))
+    cv2.imwrite(os.path.join(cfg.first_dir, 'first_edge.jpg'), detected_img)
 
-    if args.one:
+    if first_img_only:
         exit(0)
 
-    for i in range(frame_count - 1):
+    for i in range(0, frame_count - 1, frame_interval):
         cid = i + 1
         frame = cv2.imread(imgs[i + 1])
-        if i % frame_interval != 0:
-            continue
-        print(i + 1)
+        print(cid)
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         img = resize_image(HWC3(frame), image_resolution)
 
@@ -244,11 +230,6 @@ def main(args):
 
         detected_map = detector(img)
         detected_map = HWC3(detected_map)
-        # For visualization
-        if args.t:
-            detected = 255 - detected_map
-            cv2.imwrite(f'{task_config["o_tmp_dir"]}/tmp_edge_{cid:04d}.jpg',
-                        detected)
 
         control = torch.from_numpy(detected_map.copy()).float().cuda() / 255.0
         control = torch.stack([control for _ in range(num_samples)], dim=0)
@@ -362,7 +343,7 @@ def main(args):
             controller.set_task(tasks, 1.0)
 
             seed_everything(seed)
-            samples, intermediates = ddim_v_sampler.sample(
+            samples, _ = ddim_v_sampler.sample(
                 ddim_steps,
                 num_samples,
                 shape,
@@ -384,13 +365,68 @@ def main(args):
             viz = (einops.rearrange(x_samples, 'b c h w -> b h w c') * 127.5 +
                    127.5).cpu().numpy().clip(0, 255).astype(np.uint8)
 
-        Image.fromarray(viz[0]).save(f'{task_config["o_dir"]}/{cid:04d}.jpg')
+        Image.fromarray(viz[0]).save(
+            os.path.join(cfg.key_dir, f'{cid:04d}.png'))
+    if key_video_path is not None:
+        frame_to_video(key_video_path, cfg.key_dir, 5, False)
+
+
+def postprocess(cfg: RerenderConfig, ne: bool):
+    video_base_dir = cfg.work_dir
+    o_video = cfg.output_path
+    fps = get_fps(cfg.input_path)
+
+    end_frame = cfg.frame_count - 1
+    interval = cfg.interval
+    key_dir = os.path.split(cfg.key_dir)[-1]
+    use_e = '-ne' if ne else ''
+    o_video_cmd = f'--output {o_video}'
+
+    cmd = (
+        f'python video_blend.py {video_base_dir} --beg 1 --end {end_frame} '
+        f'--itv {interval} --key {key_dir} {use_e} {o_video_cmd} --fps {fps}')
+    print(cmd)
+    os.system(cmd)
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('tid', type=int)
-    parser.add_argument('-t', action='store_true')
+    parser.add_argument('--cfg', type=str, default=None)
+    parser.add_argument('--input',
+                        type=str,
+                        default=None,
+                        help='The input path to video.')
+    parser.add_argument('--output', type=str, default=None)
+    parser.add_argument('--prompt', type=str, default=None)
+    parser.add_argument('--key_video_path', type=str, default=None)
     parser.add_argument('-one', action='store_true')
+    parser.add_argument(
+        '-ne',
+        action='store_true',
+        help='Do not run ebsynth (use previous ebsynth output)')
     args = parser.parse_args()
-    main(args)
+
+    cfg = RerenderConfig()
+    if args.cfg is not None:
+        cfg.create_from_path(args.cfg)
+        if args.input is not None:
+            print('Config has been loaded. --input is ignored.')
+        if args.output is not None:
+            print('Config has been loaded. --output is ignored.')
+        if args.prompt is not None:
+            print('Config has been loaded. --prompt is ignored.')
+    else:
+        if args.input is None:
+            print('Config not found. --input is required.')
+            exit(0)
+        if args.output is None:
+            print('Config not found. --output is required.')
+            exit(0)
+        if args.prompt is None:
+            print('Config not found. --prompt is required.')
+            exit(0)
+        cfg.create_from_parameters(args.input, args.output, args.prompt)
+
+    rerender(cfg, args.one, args.key_video_path)
+    torch.cuda.empty_cache()
+    postprocess(cfg, args.ne)
