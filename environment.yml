@@ -34,3 +34,4 @@ dependencies:
       - safetensors==0.2.7
       - basicsr==1.4.2
       - blendmodes
+      - numba==0.57.0

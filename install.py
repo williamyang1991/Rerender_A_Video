@@ -14,11 +14,14 @@ def build_ebsynth():
     if os_str == 'Windows':
         print('Build Ebsynth Windows 64 bit.',
               'If you want to build for 32 bit, please modify install.py.')
-        cmd = 'build-win64-cpu+cuda.bat'
+        cmd = '.\\build-win64-cpu+cuda.bat'
+        exe_file = 'deps/ebsynth/bin/ebsynth.exe'
     elif os_str == 'Linux':
         cmd = 'bash build-linux-cpu+cuda.sh'
+        exe_file = 'deps/ebsynth/bin/ebsynth'
     elif os_str == 'Darwin':
         cmd = 'sh build-macos-cpu_only.sh'
+        exe_file = 'deps/ebsynth/bin/ebsynth.app'
     else:
         print('Cannot recognize OS. Ebsynth installation stopped.')
         return
@@ -27,7 +30,7 @@ def build_ebsynth():
     print(cmd)
     os.system(cmd)
     os.chdir('../..')
-    if os.path.exists('deps/ebsynth/bin/ebsynth'):
+    if os.path.exists(exe_file):
         print('Ebsynth installed successfully.')
     else:
         print('Failed to install Ebsynth.')
