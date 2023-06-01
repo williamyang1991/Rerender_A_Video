@@ -5,6 +5,12 @@
     "key_subdir": "keys",
     "frame_count": 102,
     "interval": 10,
+    "crop": [
+        0,
+        0,
+        0,
+        560
+    ],
     "prompt": "a handsome man in van gogh painting, best quality, extremely detailed",
     "n_prompt": "longbody, lowres, bad anatomy, bad hands, missing fingers, extra digit, fewer digits, cropped, worst quality, low quality",
     "x0_strength": -1,
@@ -14,5 +20,6 @@
     "control_strength": 0.7,
     "seed": 0,
     "warp_step": 0.1,
-    "ada_step": 0.8
+    "ada_step": 0.8,
+    "image_resolution": 256
 }

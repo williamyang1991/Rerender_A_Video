@@ -1,8 +1,8 @@
 import json
 import os
-from typing import Optional
+from typing import Optional, Sequence
 
-from src.video_util import get_frame_count, video_to_frame
+from src.video_util import get_frame_count
 
 
 class RerenderConfig:
@@ -18,6 +18,7 @@ class RerenderConfig:
                                key_subdir: str = 'keys',
                                frame_count: Optional[int] = None,
                                interval: int = 10,
+                               crop: Sequence[int] = (0, 0, 0, 0),
                                sd_model: Optional[str] = None,
                                n_prompt: str = '',
                                control_type: str = 'HED',
@@ -40,13 +41,12 @@ class RerenderConfig:
         # Split video into frames
         assert os.path.isfile(input_path), 'The input must be a video'
         self.input_dir = os.path.join(self.work_dir, 'video')
-        os.makedirs(self.input_dir, exist_ok=True)
-        video_to_frame(input_path, self.input_dir, '%04d.png', False)
 
         self.frame_count = frame_count
         if frame_count is None:
             self.frame_count = get_frame_count(self.input_path)
         self.interval = interval
+        self.crop = crop
         self.sd_model = sd_model
         self.n_prompt = n_prompt
         self.control_type = control_type
@@ -60,6 +60,7 @@ class RerenderConfig:
         self.warp_step = warp_step
         self.ada_step = ada_step
 
+        os.makedirs(self.input_dir, exist_ok=True)
         os.makedirs(self.work_dir, exist_ok=True)
         os.makedirs(self.key_dir, exist_ok=True)
         os.makedirs(self.first_dir, exist_ok=True)
@@ -81,6 +82,7 @@ class RerenderConfig:
         append_if_not_none('key_subdir')
         append_if_not_none('frame_count')
         append_if_not_none('interval')
+        append_if_not_none('crop')
         append_if_not_none('sd_model')
         append_if_not_none('n_prompt')
         append_if_not_none('control_type')

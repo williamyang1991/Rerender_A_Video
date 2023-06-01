@@ -2,6 +2,8 @@ import argparse
 import os
 import random
 
+from typing import Tuple
+
 import cv2
 import einops
 import numpy as np
@@ -26,9 +28,10 @@ from src.config import RerenderConfig
 from src.controller import AttentionControl
 from src.ddim_v_hacked import DDIMVSampler
 from src.img_util import find_flat_region, numpy2tensor
-from src.video_util import frame_to_video, get_fps
+from src.video_util import frame_to_video, get_fps, video_to_frame
 
-# Append deps to path
+blur = T.GaussianBlur(kernel_size=(9, 9), sigma=(18, 18))
+totensor = T.PILToTensor()
 
 
 def setup_color_correction(image):
@@ -51,10 +54,25 @@ def apply_color_correction(correction, original_image):
     return image
 
 
-def rerender(cfg: RerenderConfig, first_img_only: bool, key_video_path: str):
-    blur = T.GaussianBlur(kernel_size=(9, 9), sigma=(18, 18))
-    totensor = T.PILToTensor()
+def prepare_frames(input_path: str, output_dir: str, resolution: int,
+                   crop: Tuple[int, int, int, int]):
+    l, r, t, b = crop
 
+    def crop_func(frame):
+        H, W, C = frame.shape
+        frame = frame[t:H - b, l:W - r]
+        return resize_image(frame, resolution)
+
+    video_to_frame(input_path, output_dir, '%04d.png', False, crop_func)
+
+
+def rerender(cfg: RerenderConfig, first_img_only: bool, key_video_path: str):
+
+    # Preprocess input
+    prepare_frames(cfg.input_path, cfg.input_dir, cfg.image_resolution,
+                   cfg.crop)
+
+    # Load models
     if cfg.control_type == 'HED':
         detector = HEDdetector()
     elif cfg.control_type == 'canny':
@@ -67,7 +85,8 @@ def rerender(cfg: RerenderConfig, first_img_only: bool, key_video_path: str):
 
         detector = apply_canny
 
-    model: ControlLDM = create_model('./models/cldm_v15.yaml').cpu()
+    model: ControlLDM = create_model(
+        './deps/ControlNet/models/cldm_v15.yaml').cpu()
     if cfg.control_type == 'HED':
         model.load_state_dict(
             load_state_dict('./models/control_sd15_hed.pth', location='cuda'))
@@ -116,7 +135,6 @@ def rerender(cfg: RerenderConfig, first_img_only: bool, key_video_path: str):
     frame_interval = cfg.interval
 
     num_samples = 1
-    image_resolution = cfg.image_resolution
     control_strength = cfg.control_strength
     ddim_steps = 20
     scale = 7.5
@@ -149,7 +167,7 @@ def rerender(cfg: RerenderConfig, first_img_only: bool, key_video_path: str):
     with torch.no_grad():
         frame = cv2.imread(imgs[0])
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        img = resize_image(HWC3(frame), image_resolution)
+        img = HWC3(frame)
         H, W, C = img.shape
 
         img_ = numpy2tensor(img)
@@ -217,7 +235,7 @@ def rerender(cfg: RerenderConfig, first_img_only: bool, key_video_path: str):
         frame = cv2.imread(imgs[i + 1])
         print(cid)
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        img = resize_image(HWC3(frame), image_resolution)
+        img = HWC3(frame)
 
         if color_preserve:
             img_ = numpy2tensor(img)
@@ -311,8 +329,9 @@ def rerender(cfg: RerenderConfig, first_img_only: bool, key_video_path: str):
             blend_results_rec_new = model.decode_first_stage(xtrg_)
             tmp = (abs(blend_results_rec_new - blend_results).mean(
                 dim=1, keepdims=True) > 0.25).float()
-            mask_x = F.max_pool2d((F.interpolate(
-                tmp, scale_factor=1 / 8., mode='bilinear') > 0).float(),
+            mask_x = F.max_pool2d((F.interpolate(tmp,
+                                                 scale_factor=1 / 8.,
+                                                 mode='bilinear') > 0).float(),
                                   kernel_size=3,
                                   stride=1,
                                   padding=1)
