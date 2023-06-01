@@ -2,7 +2,6 @@ name: rerender
 channels:
   - pytorch
   - defaults
-  - conda-forge
 dependencies:
   - python=3.8.5
   - pip=20.3
@@ -17,6 +16,7 @@ dependencies:
       - opencv-contrib-python==4.3.0.36
       - imageio==2.9.0
       - imageio-ffmpeg==0.4.2
+      - pytorch-lightning==1.5.0
       - omegaconf==2.1.1
       - test-tube>=0.7.5
       - streamlit==1.12.1
