@@ -76,6 +76,7 @@ with block:
             #input_image = gr.Image(source='upload', type="numpy")
             input_video = gr.Video(label="Input Video", source='upload', format="mp4", visible=True)
             prompt = gr.Textbox(label="Prompt")
+            seed = gr.Slider(label="Seed", minimum=0, maximum=2147483647, step=1, value=0, randomize=True)
             run_button = gr.Button(value="Run All") 
             with gr.Row():
                 run_button1 = gr.Button(value="Run 1st Key Frame")
@@ -96,8 +97,7 @@ with block:
                     low_threshold = gr.Slider(label="Canny low threshold", minimum=1, maximum=255, value=100, step=1)
                     high_threshold = gr.Slider(label="Canny high threshold", minimum=1, maximum=255, value=200, step=1)
                 ddim_steps = gr.Slider(label="Steps", minimum=1, maximum=100, value=20, step=1)
-                scale = gr.Slider(label="CFG scale", minimum=0.1, maximum=30.0, value=7.5, step=0.1)
-                seed = gr.Slider(label="Seed", minimum=0, maximum=2147483647, step=1, value=0, randomize=False)
+                scale = gr.Slider(label="CFG scale", minimum=0.1, maximum=30.0, value=7.5, step=0.1) 
                 sd_model = gr.Dropdown(["Stable Diffusion 1.5"], label="Base model", value="Stable Diffusion 1.5")
                 a_prompt = gr.Textbox(label="Added prompt", value='best quality, extremely detailed')
                 n_prompt = gr.Textbox(label="Negative prompt",
