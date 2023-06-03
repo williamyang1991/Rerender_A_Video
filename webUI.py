@@ -6,22 +6,22 @@ import cv2
 @torch.no_grad()
 def process(input_video, prompt, image_resolution, control_strength, color_preserve, left_crop, right_crop, top_crop, bottom_crop,
            control_type, low_threshold, high_threshold, ddim_steps, scale, seed, sd_model, a_prompt, n_prompt,
-          frame_interval, keyframe_count, x0_strength, use_constraints, cross_start, cross_end, warp_start, warp_end,
+          frame_interval, keyframe_count, x0_strength, use_constraints, cross_start, cross_end, style_update_freq, warp_start, warp_end,
           mask_start, mask_end, ada_start, ada_end, mask_strength, inner_strength, smooth_boundary, MAX_PROCESS):
     
     first_frame = process1(input_video, prompt, image_resolution, control_strength, color_preserve, left_crop, right_crop, top_crop, bottom_crop,
            control_type, low_threshold, high_threshold, ddim_steps, scale, seed, sd_model, a_prompt, n_prompt,
-          frame_interval, keyframe_count, x0_strength, use_constraints, cross_start, cross_end, warp_start, warp_end,
+          frame_interval, keyframe_count, x0_strength, use_constraints, cross_start, cross_end, style_update_freq, warp_start, warp_end,
           mask_start, mask_end, ada_start, ada_end, mask_strength, inner_strength, smooth_boundary, MAX_PROCESS)
     
     keypath = process2(input_video, prompt, image_resolution, control_strength, color_preserve, left_crop, right_crop, top_crop, bottom_crop,
            control_type, low_threshold, high_threshold, ddim_steps, scale, seed, sd_model, a_prompt, n_prompt,
-          frame_interval, keyframe_count, x0_strength, use_constraints, cross_start, cross_end, warp_start, warp_end,
+          frame_interval, keyframe_count, x0_strength, use_constraints, cross_start, cross_end, style_update_freq, warp_start, warp_end,
           mask_start, mask_end, ada_start, ada_end, mask_strength, inner_strength, smooth_boundary, MAX_PROCESS)
 
     fullpath = process3(input_video, prompt, image_resolution, control_strength, color_preserve, left_crop, right_crop, top_crop, bottom_crop,
            control_type, low_threshold, high_threshold, ddim_steps, scale, seed, sd_model, a_prompt, n_prompt,
-          frame_interval, keyframe_count, x0_strength, use_constraints, cross_start, cross_end, warp_start, warp_end,
+          frame_interval, keyframe_count, x0_strength, use_constraints, cross_start, cross_end, style_update_freq, warp_start, warp_end,
           mask_start, mask_end, ada_start, ada_end, mask_strength, inner_strength, smooth_boundary, MAX_PROCESS)    
 
     return first_frame, keypath, fullpath
@@ -29,7 +29,7 @@ def process(input_video, prompt, image_resolution, control_strength, color_prese
 @torch.no_grad()
 def process1(input_video, prompt, image_resolution, control_strength, color_preserve, left_crop, right_crop, top_crop, bottom_crop,
            control_type, low_threshold, high_threshold, ddim_steps, scale, seed, sd_model, a_prompt, n_prompt,
-          frame_interval, keyframe_count, x0_strength, use_constraints, cross_start, cross_end, warp_start, warp_end,
+          frame_interval, keyframe_count, x0_strength, use_constraints, cross_start, cross_end, style_update_freq, warp_start, warp_end,
           mask_start, mask_end, ada_start, ada_end, mask_strength, inner_strength, smooth_boundary, MAX_PROCESS):
     video_cap = cv2.VideoCapture(input_video) 
     success, frame = video_cap.read()
@@ -40,7 +40,7 @@ def process1(input_video, prompt, image_resolution, control_strength, color_pres
 @torch.no_grad()
 def process2(input_video, prompt, image_resolution, control_strength, color_preserve, left_crop, right_crop, top_crop, bottom_crop,
            control_type, low_threshold, high_threshold, ddim_steps, scale, seed, sd_model, a_prompt, n_prompt,
-          frame_interval, keyframe_count, x0_strength, use_constraints, cross_start, cross_end, warp_start, warp_end,
+          frame_interval, keyframe_count, x0_strength, use_constraints, cross_start, cross_end, style_update_freq, warp_start, warp_end,
           mask_start, mask_end, ada_start, ada_end, mask_strength, inner_strength, smooth_boundary, MAX_PROCESS):
     path = 'tmp.mp4'
     video_cap = cv2.VideoCapture(input_video) 
@@ -62,7 +62,7 @@ def process2(input_video, prompt, image_resolution, control_strength, color_pres
 @torch.no_grad()
 def process3(input_video, prompt, image_resolution, control_strength, color_preserve, left_crop, right_crop, top_crop, bottom_crop,
            control_type, low_threshold, high_threshold, ddim_steps, scale, seed, sd_model, a_prompt, n_prompt,
-          frame_interval, keyframe_count, x0_strength, use_constraints, cross_start, cross_end, warp_start, warp_end,
+          frame_interval, keyframe_count, x0_strength, use_constraints, cross_start, cross_end, style_update_freq, warp_start, warp_end,
           mask_start, mask_end, ada_start, ada_end, mask_strength, inner_strength, smooth_boundary, MAX_PROCESS):
     path = input_video # 'blend.mp4'
     return path
@@ -114,6 +114,8 @@ with block:
                 with gr.Row():
                     cross_start = gr.Slider(label="Cross-frame attention start", minimum=0, maximum=1, value=0, step=0.05)
                     cross_end = gr.Slider(label="Cross-frame attention end", minimum=0, maximum=1, value=1, step=0.05)  
+                style_update_freq = gr.Slider(label="Cross-frame attention update frequency", minimum=1, maximum=100, value=1, step=1,
+                                       info="Update the key and value for cross-frame attention every N key frames")                       
                 with gr.Row():
                     warp_start = gr.Slider(label="Shape-aware fusion start", minimum=0, maximum=1, value=0, step=0.05)
                     warp_end = gr.Slider(label="Shape-aware fusion end", minimum=0, maximum=1, value=0.1, step=0.05)                  
@@ -138,7 +140,7 @@ with block:
             result_video = gr.Video(label='Output full video', format='mp4', interactive=False)  
     ips = [input_video, prompt, image_resolution, control_strength, color_preserve, left_crop, right_crop, top_crop, bottom_crop,
            control_type, low_threshold, high_threshold, ddim_steps, scale, seed, sd_model, a_prompt, n_prompt,
-          frame_interval, keyframe_count, x0_strength, use_constraints[0], cross_start, cross_end, warp_start, warp_end,
+          frame_interval, keyframe_count, x0_strength, use_constraints[0], cross_start, cross_end, style_update_freq, warp_start, warp_end,
           mask_start, mask_end, ada_start, ada_end, mask_strength, inner_strength, smooth_boundary, MAX_PROCESS]
     run_button.click(fn=process, inputs=ips, outputs=[result_image, result_keyframe, result_video])
     run_button1.click(fn=process1, inputs=ips, outputs=[result_image])
