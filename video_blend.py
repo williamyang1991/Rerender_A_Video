@@ -4,6 +4,7 @@ import struct
 import subprocess
 import time
 from typing import List
+import platform
 
 import cv2
 import numpy as np
@@ -244,6 +245,8 @@ def process_seq(video_sequence: VideoSequence,
 
 
 def main(args):
+    global MAX_PROCESS
+    MAX_PROCESS = args.n_proc
 
     video_sequence = create_sequence(f'{args.name}', args.beg, args.end,
                                      args.itv, args.key)
@@ -285,9 +288,14 @@ if __name__ == '__main__':
                         type=str,
                         default='keys0',
                         help='The subfolder name of stylized key frames')
+    parser.add_argument('--n_proc',
+                        type=int,
+                        default=8,
+                        help='The max process count')
     parser.add_argument(
         '-ne',
         action='store_true',
         help='Do not run ebsynth (use previous ebsynth output)')
+    
     args = parser.parse_args()
     main(args)

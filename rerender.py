@@ -1,7 +1,6 @@
 import argparse
 import os
 import random
-from typing import Tuple
 
 import cv2
 import einops
@@ -18,7 +17,7 @@ from skimage import exposure
 import src.import_util  # noqa: F401
 from deps.ControlNet.annotator.canny import CannyDetector
 from deps.ControlNet.annotator.hed import HEDdetector
-from deps.ControlNet.annotator.util import HWC3, resize_image
+from deps.ControlNet.annotator.util import HWC3
 from deps.ControlNet.cldm.cldm import ControlLDM
 from deps.ControlNet.cldm.model import create_model, load_state_dict
 from deps.gmflow.gmflow.gmflow import GMFlow
@@ -27,7 +26,7 @@ from src.config import RerenderConfig
 from src.controller import AttentionControl
 from src.ddim_v_hacked import DDIMVSampler
 from src.img_util import find_flat_region, numpy2tensor
-from src.video_util import frame_to_video, get_fps, video_to_frame
+from src.video_util import frame_to_video, get_fps, prepare_frames
 
 blur = T.GaussianBlur(kernel_size=(9, 9), sigma=(18, 18))
 totensor = T.PILToTensor()
@@ -51,18 +50,6 @@ def apply_color_correction(correction, original_image):
     image = blendLayers(image, original_image, BlendType.LUMINOSITY)
 
     return image
-
-
-def prepare_frames(input_path: str, output_dir: str, resolution: int,
-                   crop: Tuple[int, int, int, int]):
-    l, r, t, b = crop
-
-    def crop_func(frame):
-        H, W, C = frame.shape
-        frame = frame[t:H - b, l:W - r]
-        return resize_image(frame, resolution)
-
-    video_to_frame(input_path, output_dir, '%04d.png', False, crop_func)
 
 
 def rerender(cfg: RerenderConfig, first_img_only: bool, key_video_path: str):
@@ -129,10 +116,6 @@ def rerender(cfg: RerenderConfig, first_img_only: bool, key_video_path: str):
     flow_model.load_state_dict(weights, strict=False)
     flow_model.eval()
 
-    img_dir = cfg.input_dir
-    frame_count = cfg.frame_count
-    frame_interval = cfg.interval
-
     num_samples = 1
     control_strength = cfg.control_strength
     ddim_steps = 20
@@ -147,21 +130,21 @@ def rerender(cfg: RerenderConfig, first_img_only: bool, key_video_path: str):
     n_prompt = cfg.n_prompt
     model.control_scales = [control_strength] * 13
 
-    style_update_freq = max(10, frame_interval)
+    style_update_freq = cfg.style_update_freq
     pixelfusion = True
-    color_preserve = True
+    color_preserve = cfg.color_preserve
 
     x0_strength = cfg.x0_strength
-    ada_step = cfg.ada_step
-    warp_step = cfg.warp_step
-    mask_step = [0.5, 0.8]
+    mask_period = cfg.mask_period
     firstx0 = True
-    controller = AttentionControl(ada_step, warp_step)
+    controller = AttentionControl(cfg.inner_strength, cfg.mask_period,
+                                  cfg.cross_period, cfg.ada_period,
+                                  cfg.warp_period)
 
-    imgs = sorted(os.listdir(img_dir))
-    imgs = [os.path.join(img_dir, img) for img in imgs]
-    if frame_count >= 0:
-        imgs = imgs[:frame_count]
+    imgs = sorted(os.listdir(cfg.input_dir))
+    imgs = [os.path.join(cfg.input_dir, img) for img in imgs]
+    if cfg.frame_count >= 0:
+        imgs = imgs[:cfg.frame_count]
 
     with torch.no_grad():
         frame = cv2.imread(imgs[0])
@@ -229,7 +212,7 @@ def rerender(cfg: RerenderConfig, first_img_only: bool, key_video_path: str):
     if first_img_only:
         exit(0)
 
-    for i in range(0, frame_count - 1, frame_interval):
+    for i in range(0, cfg.frame_count - 1, cfg.interval):
         cid = i + 1
         frame = cv2.imread(imgs[i + 1])
         print(cid)
@@ -328,22 +311,27 @@ def rerender(cfg: RerenderConfig, first_img_only: bool, key_video_path: str):
             blend_results_rec_new = model.decode_first_stage(xtrg_)
             tmp = (abs(blend_results_rec_new - blend_results).mean(
                 dim=1, keepdims=True) > 0.25).float()
-            mask_x = F.max_pool2d((F.interpolate(
-                tmp, scale_factor=1 / 8., mode='bilinear') > 0).float(),
+            mask_x = F.max_pool2d((F.interpolate(tmp,
+                                                 scale_factor=1 / 8.,
+                                                 mode='bilinear') > 0).float(),
                                   kernel_size=3,
                                   stride=1,
                                   padding=1)
 
             mask = (1 - F.max_pool2d(1 - blend_mask, kernel_size=8)
                     )  # * (1-mask_x)
-            noise_rescale = find_flat_region(mask)
+
+            if cfg.smooth_boundary:
+                noise_rescale = find_flat_region(mask)
+            else:
+                noise_rescale = torch.ones_like(mask)
             masks = []
             for i in range(ddim_steps):
-                if i <= ddim_steps * mask_step[
-                        0] or i >= ddim_steps * mask_step[1]:
+                if i <= ddim_steps * mask_period[
+                        0] or i >= ddim_steps * mask_period[1]:
                     masks += [None]
                 else:
-                    masks += [mask * 0.5]
+                    masks += [mask * cfg.mask_strength]
 
             # mask 3
             # xtrg = ((1-mask_x) *
@@ -388,7 +376,7 @@ def rerender(cfg: RerenderConfig, first_img_only: bool, key_video_path: str):
         frame_to_video(key_video_path, cfg.key_dir, 5, False)
 
 
-def postprocess(cfg: RerenderConfig, ne: bool):
+def postprocess(cfg: RerenderConfig, ne: bool, max_process: int):
     video_base_dir = cfg.work_dir
     o_video = cfg.output_path
     fps = get_fps(cfg.input_path)
@@ -401,7 +389,8 @@ def postprocess(cfg: RerenderConfig, ne: bool):
 
     cmd = (
         f'python video_blend.py {video_base_dir} --beg 1 --end {end_frame} '
-        f'--itv {interval} --key {key_dir} {use_e} {o_video_cmd} --fps {fps}')
+        f'--itv {interval} --key {key_dir} {use_e} {o_video_cmd} --fps {fps} '
+        f'--n_proc {max_process}')
     print(cmd)
     os.system(cmd)
 
@@ -417,10 +406,15 @@ if __name__ == '__main__':
     parser.add_argument('--prompt', type=str, default=None)
     parser.add_argument('--key_video_path', type=str, default=None)
     parser.add_argument('-one', action='store_true')
+    parser.add_argument('--n_proc',
+                        type=int,
+                        default=4,
+                        help='The max process count')
     parser.add_argument(
         '-ne',
         action='store_true',
         help='Do not run ebsynth (use previous ebsynth output)')
+
     args = parser.parse_args()
 
     cfg = RerenderConfig()
@@ -446,4 +440,4 @@ if __name__ == '__main__':
 
     rerender(cfg, args.one, args.key_video_path)
     torch.cuda.empty_cache()
-    postprocess(cfg, args.ne)
+    postprocess(cfg, args.ne, args.n_proc)

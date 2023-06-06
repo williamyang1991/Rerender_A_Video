@@ -310,8 +310,8 @@ class DDIMVSampler(object):
                 else:
                     weight = mask
                 if weight is not None:
-                    rescale = torch.maximum(1. - weight,
-                                            (1 - weight**2)**0.5 * 0.9)
+                    rescale = torch.maximum(1. - weight, (1 - weight**2)**0.5 *
+                                            controller.inner_strength)
                     if noise_rescale is not None:
                         rescale = (1. - weight) * (
                             1 - noise_rescale) + rescale * noise_rescale

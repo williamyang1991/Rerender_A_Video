@@ -1,6 +1,8 @@
 import os
 
+import numpy as np
 import cv2
+import imageio
 
 
 def video_to_frame(video_path: str,
@@ -33,29 +35,28 @@ def video_to_frame(video_path: str,
 def frame_to_video(video_path: str,
                    frame_dir: str,
                    fps=30,
-                   log=True,
-                   fourcc='mp4v'):
+                   log=True):
 
     first_img = True
+    writer = imageio.get_writer(video_path, fps=fps)
 
     file_list = sorted(os.listdir(frame_dir))
     for file_name in file_list:
+        if not (file_name.endswith('jpg') or file_name.endswith('png')):
+            continue
+        
         fn = os.path.join(frame_dir, file_name)
-        curImg = cv2.imread(fn)
+        curImg = imageio.imread(fn)
 
         if first_img:
             H, W = curImg.shape[0:2]
             if log:
                 print('img shape', (H, W))
-            fourcc = cv2.VideoWriter_fourcc(*fourcc)
-            vid_out = cv2.VideoWriter(video_path, fourcc, fps, (W, H))
             first_img = False
 
-        vid_out.write(curImg)
-        if log:
-            print(fn)
+        writer.append_data(curImg)
 
-    vid_out.release()
+    writer.close()
 
 
 def get_fps(video_path: str):
@@ -70,3 +71,29 @@ def get_frame_count(video_path: str):
     frame_count = video.get(cv2.CAP_PROP_FRAME_COUNT)
     video.release()
     return frame_count
+
+
+def resize_image(input_image, resolution):
+    H, W, C = input_image.shape
+    H = float(H)
+    W = float(W)
+    k = float(resolution) / min(H, W)
+    H *= k
+    W *= k
+    H = int(np.round(H / 64.0)) * 64
+    W = int(np.round(W / 64.0)) * 64
+    img = cv2.resize(
+        input_image, (W, H),
+        interpolation=cv2.INTER_LANCZOS4 if k > 1 else cv2.INTER_AREA)
+    return img
+
+
+def prepare_frames(input_path: str, output_dir: str, resolution: int, crop):
+    l, r, t, b = crop
+
+    def crop_func(frame):
+        H, W, C = frame.shape
+        frame = frame[t:H - b, l:W - r]
+        return resize_image(frame, resolution)
+
+    video_to_frame(input_path, output_dir, '%04d.png', False, crop_func)
