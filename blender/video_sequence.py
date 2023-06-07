@@ -1,4 +1,5 @@
 import os
+import shutil
 
 
 class VideoSequence:
@@ -53,6 +54,12 @@ class VideoSequence:
     @property
     def blending_dir(self):
         return os.path.abspath(self.__blending_out_dir)
+
+    def remove_out_and_tmp(self):
+        for i in range(self.n_seq + 1):
+            out_dir = self.__get_out_subdir(i)
+            shutil.rmtree(out_dir)
+        shutil.rmtree(self.__tmp_dir)
 
     def get_input_sequence(self, i, is_forward=True):
         beg_id = self.get_sequence_beg_id(i)

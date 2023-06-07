@@ -4,6 +4,7 @@ import imageio
 import cv2
 import os
 from enum import Enum
+import shutil
 
 import einops
 import numpy as np
@@ -30,6 +31,8 @@ from src.ddim_v_hacked import DDIMVSampler
 from src.img_util import find_flat_region, numpy2tensor
 from src.video_util import (frame_to_video, get_fps, get_frame_count,
                             prepare_frames)
+
+from sd_model_cfg import model_dict
 
 to_tensor = T.PILToTensor()
 blur = T.GaussianBlur(kernel_size=(9, 9), sigma=(18, 18))
@@ -73,7 +76,7 @@ class GlobalState:
                                            cross_period, ada_period,
                                            warp_period)
 
-    def update_sd_model(self, sd_model, control_type):
+    def update_sd_model(self, sd_model, control_type, control_strength):
         if sd_model == self.sd_model:
             return
         self.sd_model = sd_model
@@ -87,13 +90,14 @@ class GlobalState:
                 load_state_dict('./models/control_sd15_canny.pth',
                                 location='cuda'))
         model = model.cuda()
-
-        if sd_model != 'Stable Diffusion 1.5':
-            model_ext = os.path.splitext(sd_model)[1]
+        model.control_scales = [control_strength] * 13
+        sd_model_path = model_dict[sd_model]
+        if len(sd_model_path) > 0:
+            model_ext = os.path.splitext(sd_model_path)[1]
             if model_ext == '.safetensors':
-                model.load_state_dict(load_file(sd_model), strict=False)
+                model.load_state_dict(load_file(sd_model_path), strict=False)
             elif model_ext == '.ckpt' or model_ext == '.pth':
-                model.load_state_dict(torch.load(sd_model)['state_dict'],
+                model.load_state_dict(torch.load(sd_model_path)['state_dict'],
                                       strict=False)
 
         try:
@@ -128,6 +132,8 @@ class GlobalState:
 
 
 global_state = GlobalState()
+
+video_frame_count = None
 
 
 def create_cfg(input_path, prompt, image_resolution, control_strength,
@@ -225,10 +231,10 @@ def process(*args):
 @torch.no_grad()
 def process1(*args):
     cfg = create_cfg(*args)
-    print(args)
-    global global_state
 
-    global_state.update_sd_model(cfg.sd_model, cfg.control_type)
+    global global_state
+    global_state.update_sd_model(cfg.sd_model, cfg.control_type,
+                                 cfg.control_strength)
     global_state.update_controller(cfg.inner_strength, cfg.mask_period,
                                    cfg.cross_period, cfg.ada_period,
                                    cfg.warp_period)
@@ -282,6 +288,12 @@ def process1(*args):
 
             controller.set_task('initfirst')
             seed_everything(cfg.seed)
+
+            if not color_preserve:
+                strength = -1
+            else:
+                strength = cfg.x0_strength
+
             samples, _ = ddim_v_sampler.sample(
                 cfg.ddim_steps,
                 num_samples,
@@ -293,7 +305,7 @@ def process1(*args):
                 unconditional_conditioning=un_cond,
                 controller=controller,
                 x0=x0,
-                strength=cfg.x0_strength)
+                strength=strength)
             x_samples = model.decode_first_stage(samples)
             x_samples_np = (
                 einops.rearrange(x_samples, 'b c h w -> b h w c') * 127.5 +
@@ -314,6 +326,9 @@ def process1(*args):
         global_state.first_result = x_samples
         global_state.first_img = img
 
+    Image.fromarray(x_samples_np[0]).save(
+        os.path.join(cfg.first_dir, 'first.jpg'))
+
     return x_samples_np[0]
 
 
@@ -322,15 +337,19 @@ def process2(*args):
     global global_state
 
     if global_state.processing_state != ProcessingState.FIRST_IMG:
-        print('Please generate the first key image before generating'
-              ' all key images')
-        return None
+        raise gr.Error('Please generate the first key image before generating'
+                       ' all key images')
 
     cfg = create_cfg(*args)
-    global_state.update_sd_model(cfg.sd_model, cfg.control_type)
+    global_state.update_sd_model(cfg.sd_model, cfg.control_type,
+                                 cfg.control_strength)
     global_state.update_detector(cfg.control_type, cfg.canny_low,
                                  cfg.canny_high)
     global_state.processing_state = ProcessingState.KEY_IMGS
+
+    # reset key dir
+    shutil.rmtree(cfg.key_dir)
+    os.makedirs(cfg.key_dir, exist_ok=True)
 
     ddim_v_sampler = global_state.ddim_v_sampler
     model = ddim_v_sampler.model
@@ -341,7 +360,7 @@ def process2(*args):
     num_samples = 1
     eta = 0.0
     firstx0 = True
-    pixelfusion = True
+    pixelfusion = cfg.use_mask
     imgs = sorted(os.listdir(cfg.input_dir))
     imgs = [os.path.join(cfg.input_dir, img) for img in imgs]
 
@@ -525,7 +544,9 @@ def process2(*args):
             os.path.join(cfg.key_dir, f'{cid:04d}.png'))
 
     key_video_path = os.path.join(cfg.work_dir, 'key.mp4')
-    frame_to_video(key_video_path, cfg.key_dir, 5, False)
+    fps = get_fps(cfg.input_path)
+    fps //= cfg.interval
+    frame_to_video(key_video_path, cfg.key_dir, fps, False)
 
     return key_video_path
 
@@ -536,12 +557,17 @@ def process3(*args):
     args = args[:-1]
     global global_state
     if global_state.processing_state != ProcessingState.KEY_IMGS:
-        print('Please generating key images before propagation')
-        return None
+        raise gr.Error('Please generate key images before propagation')
 
     global_state.clear_sd_model()
 
     cfg = create_cfg(*args)
+
+    # reset blend dir
+    blend_dir = os.path.join(cfg.work_dir, 'blend')
+    if os.path.exists(blend_dir):
+        shutil.rmtree(blend_dir)
+    os.makedirs(blend_dir, exist_ok=True)
 
     video_base_dir = cfg.work_dir
     o_video = cfg.output_path
@@ -646,7 +672,8 @@ with block:
                                   maximum=30.0,
                                   value=7.5,
                                   step=0.1)
-                sd_model = gr.Dropdown(["Stable Diffusion 1.5"],
+                sd_model_list = list(model_dict.keys())
+                sd_model = gr.Dropdown(sd_model_list,
                                        label="Base model",
                                        value="Stable Diffusion 1.5")
                 a_prompt = gr.Textbox(label="Added prompt",
@@ -661,16 +688,15 @@ with block:
                 interval = gr.Slider(
                     label="Key frame frequency (K)",
                     minimum=1,
-                    maximum=100,
-                    value=10,
+                    maximum=1,
+                    value=1,
                     step=1,
                     info="Uniformly sample the key frames every K frames")
                 keyframe_count = gr.Slider(label="Number of key frames",
                                            minimum=1,
-                                           maximum=100,
-                                           value=11,
+                                           maximum=1,
+                                           value=1,
                                            step=1)
-                keyframe_count
                 x0_strength = gr.Slider(
                     label="Denoising strength",
                     minimum=0.00,
@@ -783,11 +809,31 @@ with block:
 
     def input_changed(path):
         frame_count = get_frame_count(path)
-        default_interval = 10
-        keyframe_count = (frame_count - 2) // default_interval
-        return default_interval, keyframe_count
+        if frame_count <= 2:
+            raise gr.Error('The input video is too short!'
+                           'Please input another video.')
+
+        default_interval = min(10, frame_count - 2)
+        max_keyframe = (frame_count - 2) // default_interval
+
+        global video_frame_count
+        video_frame_count = frame_count
+
+        return gr.Slider.update(value=default_interval,
+                                maximum=max_keyframe), gr.Slider.update(
+                                    value=max_keyframe, maximum=max_keyframe)
+
+    def interval_changed(interval):
+        global video_frame_count
+        if video_frame_count is None:
+            return gr.Slider.update()
+
+        max_keyframe = (video_frame_count - 2) // interval
+
+        return gr.Slider.update(value=max_keyframe, maximum=max_keyframe)
 
     input_path.change(input_changed, input_path, [interval, keyframe_count])
+    interval.change(interval_changed, interval, keyframe_count)
 
     ips = [
         input_path, prompt, image_resolution, control_strength, color_preserve,

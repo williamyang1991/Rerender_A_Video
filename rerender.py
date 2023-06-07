@@ -81,6 +81,7 @@ def rerender(cfg: RerenderConfig, first_img_only: bool, key_video_path: str):
             load_state_dict('./models/control_sd15_canny.pth',
                             location='cuda'))
     model = model.cuda()
+    model.control_scales = [cfg.control_strength] * 13
 
     if cfg.sd_model is not None:
         model_ext = os.path.splitext(cfg.sd_model)[1]
@@ -117,7 +118,6 @@ def rerender(cfg: RerenderConfig, first_img_only: bool, key_video_path: str):
     flow_model.eval()
 
     num_samples = 1
-    control_strength = cfg.control_strength
     ddim_steps = 20
     scale = 7.5
 
@@ -128,7 +128,6 @@ def rerender(cfg: RerenderConfig, first_img_only: bool, key_video_path: str):
 
     prompt = cfg.prompt
     n_prompt = cfg.n_prompt
-    model.control_scales = [control_strength] * 13
 
     style_update_freq = cfg.style_update_freq
     pixelfusion = True
@@ -373,7 +372,9 @@ def rerender(cfg: RerenderConfig, first_img_only: bool, key_video_path: str):
         Image.fromarray(viz[0]).save(
             os.path.join(cfg.key_dir, f'{cid:04d}.png'))
     if key_video_path is not None:
-        frame_to_video(key_video_path, cfg.key_dir, 5, False)
+        fps = get_fps(cfg.input_path)
+        fps //= cfg.interval
+        frame_to_video(key_video_path, cfg.key_dir, fps, False)
 
 
 def postprocess(cfg: RerenderConfig, ne: bool, max_process: int):

@@ -90,10 +90,13 @@ def resize_image(input_image, resolution):
 
 def prepare_frames(input_path: str, output_dir: str, resolution: int, crop):
     l, r, t, b = crop
-
     def crop_func(frame):
         H, W, C = frame.shape
-        frame = frame[t:H - b, l:W - r]
+        left = np.clip(l, 0, W)
+        right = np.clip(W - r, left, W)
+        top = np.clip(t, 0, H)
+        bottom = np.clip(H - b, top, H)
+        frame = frame[top:bottom, left:right]
         return resize_image(frame, resolution)
 
     video_to_frame(input_path, output_dir, '%04d.png', False, crop_func)

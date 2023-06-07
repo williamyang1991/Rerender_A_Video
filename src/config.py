@@ -126,3 +126,15 @@ class RerenderConfig:
         append_if_not_none('smooth_boundary')
         append_if_not_none('color_perserve')
         self.create_from_parameters(**kwargs)
+
+    @property
+    def use_warp(self):
+        return self.warp_period[0] <= self.warp_period[1]
+
+    @property
+    def use_mask(self):
+        return self.mask_period[0] <= self.mask_period[1]
+
+    @property
+    def use_ada(self):
+        return self.ada_period[0] <= self.ada_period[1]
