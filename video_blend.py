@@ -215,7 +215,7 @@ def process_seq(video_sequence: VideoSequence,
         p_mask = mask
 
         out_mask = np.expand_dims(mask, 2)
-        cv2.imwrite(f'mask/mask_{c_id:04d}.jpg', out_mask * 255)
+        #cv2.imwrite(f'mask/mask_{c_id:04d}.jpg', out_mask * 255)
 
         min_error_img = assemble_min_error_img(oa, ob, mask)
         if blend_histogram:
@@ -244,6 +244,8 @@ def process_seq(video_sequence: VideoSequence,
 
 
 def main(args):
+    global MAX_PROCESS
+    MAX_PROCESS = args.n_proc
 
     video_sequence = create_sequence(f'{args.name}', args.beg, args.end,
                                      args.itv, args.key)
@@ -256,6 +258,8 @@ def main(args):
     if args.output:
         frame_to_video(args.output, video_sequence.blending_dir, args.fps,
                        False)
+    if not args.tmp:
+        video_sequence.remove_out_and_tmp()
 
 
 if __name__ == '__main__':
@@ -285,9 +289,17 @@ if __name__ == '__main__':
                         type=str,
                         default='keys0',
                         help='The subfolder name of stylized key frames')
+    parser.add_argument('--n_proc',
+                        type=int,
+                        default=8,
+                        help='The max process count')
     parser.add_argument(
         '-ne',
         action='store_true',
         help='Do not run ebsynth (use previous ebsynth output)')
+    parser.add_argument('-tmp',
+                        action='store_true',
+                        help='Keep temporary results')
+
     args = parser.parse_args()
     main(args)

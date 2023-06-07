@@ -21,7 +21,8 @@ def calc_mean_std(feat, eps=1e-5):
 
 class AttentionControl():
 
-    def __init__(self, ada_step=0.8, warp_step=0.3):
+    def __init__(self, inner_strength, mask_period, cross_period, ada_period,
+                 warp_period):
         self.step_store = self.get_empty_store()
         self.cur_step = 0
         self.total_step = 0
@@ -29,13 +30,15 @@ class AttentionControl():
         self.init_store = False
         self.restore = False
         self.update = False
-        self.restore_step = 1.0
         self.flow = None
         self.mask = None
         self.restorex0 = False
         self.updatex0 = False
-        self.ada_step = ada_step
-        self.warp_step = warp_step
+        self.inner_strength = inner_strength
+        self.cross_period = cross_period
+        self.mask_period = mask_period
+        self.ada_period = ada_period
+        self.warp_period = warp_period
 
     @staticmethod
     def get_empty_store():
@@ -47,14 +50,16 @@ class AttentionControl():
         }
 
     def forward(self, context, is_cross: bool, place_in_unet: str):
+        cross_period = (self.total_step * self.cross_period[0],
+                        self.total_step * self.cross_period[1])
         if not is_cross and place_in_unet == 'up':
             if self.init_store:
                 self.step_store['first'].append(context.detach())
                 self.step_store['previous'].append(context.detach())
             if self.update:
                 tmp = context.clone().detach()
-            if self.restore and \
-                    self.cur_step <= self.total_step * self.restore_step:
+            if self.restore and self.cur_step >= cross_period[0] and \
+                    self.cur_step <= cross_period[1]:
                 context = torch.cat(
                     (self.step_store['first'][self.cur_index],
                      self.step_store['previous'][self.cur_index]),
@@ -73,11 +78,15 @@ class AttentionControl():
         if self.updatex0:
             tmp = x0.clone().detach()
         if self.restorex0:
-            if self.cur_step >= self.total_step * self.ada_step:
+            if self.cur_step >= self.total_step * self.ada_period[
+                    0] and self.cur_step <= self.total_step * self.ada_period[
+                        1]:
                 x0 = F.instance_norm(x0) * self.step_store['first_ada'][
                     2 * self.cur_step +
                     1] + self.step_store['first_ada'][2 * self.cur_step]
-            if self.cur_step <= self.total_step * self.warp_step:
+            if self.cur_step >= self.total_step * self.warp_period[
+                    0] and self.cur_step <= self.total_step * self.warp_period[
+                        1]:
                 pre = self.step_store['x0_previous'][self.cur_step]
                 x0 = flow_warp(pre, self.flow, mode='nearest') * self.mask + (
                     1 - self.mask) * x0
