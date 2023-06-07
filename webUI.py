@@ -76,7 +76,7 @@ class GlobalState:
                                            cross_period, ada_period,
                                            warp_period)
 
-    def update_sd_model(self, sd_model, control_type, control_strength):
+    def update_sd_model(self, sd_model, control_type):
         if sd_model == self.sd_model:
             return
         self.sd_model = sd_model
@@ -90,7 +90,6 @@ class GlobalState:
                 load_state_dict('./models/control_sd15_canny.pth',
                                 location='cuda'))
         model = model.cuda()
-        model.control_scales = [control_strength] * 13
         sd_model_path = model_dict[sd_model]
         if len(sd_model_path) > 0:
             model_ext = os.path.splitext(sd_model_path)[1]
@@ -233,8 +232,7 @@ def process1(*args):
     cfg = create_cfg(*args)
 
     global global_state
-    global_state.update_sd_model(cfg.sd_model, cfg.control_type,
-                                 cfg.control_strength)
+    global_state.update_sd_model(cfg.sd_model, cfg.control_type)
     global_state.update_controller(cfg.inner_strength, cfg.mask_period,
                                    cfg.cross_period, cfg.ada_period,
                                    cfg.warp_period)
@@ -249,6 +247,7 @@ def process1(*args):
     model = ddim_v_sampler.model
     detector = global_state.detector
     controller = global_state.controller
+    model.control_scales = [cfg.control_strength] * 13
 
     num_samples = 1
     eta = 0.0
@@ -263,7 +262,7 @@ def process1(*args):
 
         img_ = numpy2tensor(img)
 
-        def generate_first_img(img_):
+        def generate_first_img(img_, strength):
             encoder_posterior = model.encode_first_stage(img_.cuda())
             x0 = model.get_first_stage_encoding(encoder_posterior).detach()
 
@@ -289,11 +288,6 @@ def process1(*args):
             controller.set_task('initfirst')
             seed_everything(cfg.seed)
 
-            if not color_preserve:
-                strength = -1
-            else:
-                strength = cfg.x0_strength
-
             samples, _ = ddim_v_sampler.sample(
                 cfg.ddim_steps,
                 num_samples,
@@ -312,7 +306,12 @@ def process1(*args):
                 127.5).cpu().numpy().clip(0, 255).astype(np.uint8)
             return x_samples, x_samples_np
 
-        x_samples, x_samples_np = generate_first_img(img_)
+        if not color_preserve:
+            first_strength = -1
+        else:
+            first_strength = cfg.x0_strength
+
+        x_samples, x_samples_np = generate_first_img(img_, first_strength)
 
         if not cfg.color_preserve:
             color_corrections = setup_color_correction(
@@ -321,7 +320,7 @@ def process1(*args):
             img_ = apply_color_correction(color_corrections,
                                           Image.fromarray(img))
             img_ = to_tensor(img_).unsqueeze(0)[:, :3] / 127.5 - 1
-            x_samples, x_samples_np = generate_first_img(img_)
+            x_samples, x_samples_np = generate_first_img(img_, cfg.x0_strength)
 
         global_state.first_result = x_samples
         global_state.first_img = img
@@ -341,8 +340,7 @@ def process2(*args):
                        ' all key images')
 
     cfg = create_cfg(*args)
-    global_state.update_sd_model(cfg.sd_model, cfg.control_type,
-                                 cfg.control_strength)
+    global_state.update_sd_model(cfg.sd_model, cfg.control_type)
     global_state.update_detector(cfg.control_type, cfg.canny_low,
                                  cfg.canny_high)
     global_state.processing_state = ProcessingState.KEY_IMGS
@@ -356,6 +354,7 @@ def process2(*args):
     detector = global_state.detector
     controller = global_state.controller
     flow_model = global_state.flow_model
+    model.control_scales = [cfg.control_strength] * 13
 
     num_samples = 1
     eta = 0.0
