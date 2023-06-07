@@ -306,6 +306,8 @@ def process1(*args):
                 127.5).cpu().numpy().clip(0, 255).astype(np.uint8)
             return x_samples, x_samples_np
 
+        # When not preserve color, draw a different frame at first and use its
+        # color to redraw the first frame.
         if not color_preserve:
             first_strength = -1
         else:
@@ -315,7 +317,7 @@ def process1(*args):
 
         if not cfg.color_preserve:
             color_corrections = setup_color_correction(
-                Image.fromarray(x_samples[0]))
+                Image.fromarray(x_samples_np[0]))
             global_state.color_corrections = color_corrections
             img_ = apply_color_correction(color_corrections,
                                           Image.fromarray(img))
@@ -621,6 +623,15 @@ with block:
                                              maximum=2.0,
                                              value=1.0,
                                              step=0.01)
+                x0_strength = gr.Slider(
+                    label="Denoising strength",
+                    minimum=0.00,
+                    maximum=1.05,
+                    value=0.75,
+                    step=0.05,
+                    info=
+                    "0: fully recover the input. 1.05: fully rerender the input."
+                )
                 color_preserve = gr.Checkbox(
                     label='Preserve color',
                     value=True,
@@ -696,15 +707,7 @@ with block:
                                            maximum=1,
                                            value=1,
                                            step=1)
-                x0_strength = gr.Slider(
-                    label="Denoising strength",
-                    minimum=0.00,
-                    maximum=1.05,
-                    value=0.75,
-                    step=0.05,
-                    info=
-                    "0: fully recover the input. 1.05: fully rerender the input."
-                )
+
                 use_constraints = gr.CheckboxGroup(
                     [
                         "shape-aware fusion", "pixel-aware fusion",
