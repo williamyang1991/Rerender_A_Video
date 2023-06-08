@@ -1,9 +1,9 @@
 {
-    "input": "videos/woman1.mp4",
-    "output": "videos/woman1/blend.mp4",
-    "work_dir": "videos/woman1",
+    "input": "videos/pexels-koolshooters-7322716.mp4",
+    "output": "videos/pexels-koolshooters-7322716/blend.mp4",
+    "work_dir": "videos/pexels-koolshooters-7322716",
     "key_subdir": "keys",
-    "frame_count": 92,
+    "frame_count": 102,
     "interval": 10,
     "sd_model": "models/revAnimated_v11.safetensors",
     "prompt": "a beautiful woman in CG style, best quality, extremely detailed",
@@ -17,3 +17,4 @@
     "warp_step": 0.1,
     "ada_step": 1.0
 }
+
