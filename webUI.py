@@ -498,8 +498,9 @@ def process2(*args):
             blend_results_rec_new = model.decode_first_stage(xtrg_)
             tmp = (abs(blend_results_rec_new - blend_results).mean(
                 dim=1, keepdims=True) > 0.25).float()
-            mask_x = F.max_pool2d((F.interpolate(
-                tmp, scale_factor=1 / 8., mode='bilinear') > 0).float(),
+            mask_x = F.max_pool2d((F.interpolate(tmp,
+                                                 scale_factor=1 / 8.,
+                                                 mode='bilinear') > 0).float(),
                                   kernel_size=3,
                                   stride=1,
                                   padding=1)
@@ -877,7 +878,7 @@ with block:
     def input_changed(path):
         frame_count = get_frame_count(path)
         if frame_count <= 2:
-            gr.Slider.update(maximum=1), gr.Slider.update(maximum=1)
+            return gr.Slider.update(maximum=1), gr.Slider.update(maximum=1)
 
         default_interval = min(10, frame_count - 2)
         max_keyframe = (frame_count - 2) // default_interval
