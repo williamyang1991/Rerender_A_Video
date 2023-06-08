@@ -73,6 +73,13 @@ python rerender.py --cfg config/real2sculpture.json
 
 ## (1) Inference
 
+TODO
+1. WeUI (recommended)
+2. Rerender the first key frame
+3. Rerender the full key frames
+4. Rerender the full video with propagation
+5. Use your own customized model
+
 ## (2) Results
 
 ### Key frame translation
@@ -134,4 +141,4 @@ If you find this work useful for your research, please consider citing our paper
 
 ## Acknowledgments
 
-The code is mainly developed based on [ControlNet](https://github.com/lllyasviel/ControlNet), [Stable Diffusion](https://github.com/Stability-AI/stablediffusion).
+The code is mainly developed based on [ControlNet](https://github.com/lllyasviel/ControlNet), [Stable Diffusion](https://github.com/Stability-AI/stablediffusion), [GMFlow](https://github.com/haofeixu/gmflow) and [Ebsynth](https://github.com/jamriska/ebsynth).
