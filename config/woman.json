@@ -6,7 +6,8 @@
     "frame_count": 102,
     "interval": 10,
     "sd_model": "models/revAnimated_v11.safetensors",
-    "prompt": "a beautiful woman in CG style, best quality, extremely detailed",
+    "prompt": "a beautiful woman in CG style",
+    "a_prompt": "best quality, extremely detailed",
     "n_prompt": "longbody, lowres, bad anatomy, bad hands, missing fingers, extra digit, fewer digits, cropped, worst quality, low quality",
     "x0_strength": 0.75,
     "control_type": "canny",
@@ -17,4 +18,3 @@
     "warp_step": 0.1,
     "ada_step": 1.0
 }
-
