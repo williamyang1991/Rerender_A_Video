@@ -20,6 +20,7 @@ class RerenderConfig:
                                interval: int = 10,
                                crop: Sequence[int] = (0, 0, 0, 0),
                                sd_model: Optional[str] = None,
+                               a_prompt: str = '',
                                n_prompt: str = '',
                                ddim_steps=20,
                                scale=7.5,
@@ -58,6 +59,7 @@ class RerenderConfig:
         self.interval = interval
         self.crop = crop
         self.sd_model = sd_model
+        self.a_prompt = a_prompt
         self.n_prompt = n_prompt
         self.ddim_steps = ddim_steps
         self.scale = scale
@@ -106,6 +108,7 @@ class RerenderConfig:
         append_if_not_none('interval')
         append_if_not_none('crop')
         append_if_not_none('sd_model')
+        append_if_not_none('a_prompt')
         append_if_not_none('n_prompt')
         append_if_not_none('ddim_steps')
         append_if_not_none('scale')

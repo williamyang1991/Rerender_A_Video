@@ -165,7 +165,8 @@ def create_cfg(input_path, prompt, image_resolution, control_strength,
     cfg.create_from_parameters(
         input_path,
         os.path.join('result', input_name, 'blend.mp4'),
-        prompt + ', ' + a_prompt,
+        prompt,
+        a_prompt=a_prompt,
         n_prompt=n_prompt,
         frame_count=frame_count,
         interval=interval,
@@ -206,11 +207,12 @@ def cfg_to_input(filename):
     args = [
         cfg.input_path, cfg.prompt, cfg.image_resolution, cfg.control_strength,
         cfg.color_preserve, *cfg.crop, cfg.control_type, cfg.canny_low,
-        cfg.canny_high, cfg.ddim_steps, cfg.scale, cfg.seed, sd_model, '',
-        cfg.n_prompt, cfg.interval, keyframe_count, cfg.x0_strength,
-        use_constraints, *cfg.cross_period, cfg.style_update_freq,
-        *cfg.warp_period, *cfg.mask_period, *cfg.ada_period, cfg.mask_strength,
-        cfg.inner_strength, cfg.smooth_boundary
+        cfg.canny_high, cfg.ddim_steps, cfg.scale, cfg.seed, sd_model,
+        cfg.a_prompt, cfg.n_prompt, cfg.interval, keyframe_count,
+        cfg.x0_strength, use_constraints, *cfg.cross_period,
+        cfg.style_update_freq, *cfg.warp_period, *cfg.mask_period,
+        *cfg.ada_period, cfg.mask_strength, cfg.inner_strength,
+        cfg.smooth_boundary
     ]
     return args
 
@@ -296,8 +298,10 @@ def process1(*args):
             control = einops.rearrange(control, 'b h w c -> b c h w').clone()
             cond = {
                 'c_concat': [control],
-                'c_crossattn':
-                [model.get_learned_conditioning([cfg.prompt] * num_samples)]
+                'c_crossattn': [
+                    model.get_learned_conditioning(
+                        [cfg.prompt + ', ' + cfg.a_prompt] * num_samples)
+                ]
             }
             un_cond = {
                 'c_concat': [control],
@@ -418,8 +422,10 @@ def process2(*args):
         control = einops.rearrange(control, 'b h w c -> b c h w').clone()
         cond = {
             'c_concat': [control],
-            'c_crossattn':
-            [model.get_learned_conditioning([cfg.prompt] * num_samples)]
+            'c_crossattn': [
+                model.get_learned_conditioning(
+                    [cfg.prompt + ', ' + cfg.a_prompt] * num_samples)
+            ]
         }
         un_cond = {
             'c_concat': [control],

@@ -127,7 +127,9 @@ def rerender(cfg: RerenderConfig, first_img_only: bool, key_video_path: str):
     eta = 0.0
 
     prompt = cfg.prompt
+    a_prompt = cfg.a_prompt
     n_prompt = cfg.n_prompt
+    prompt = prompt + ', ' + a_prompt
 
     style_update_freq = cfg.style_update_freq
     pixelfusion = True
