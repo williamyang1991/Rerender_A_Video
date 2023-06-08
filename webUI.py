@@ -30,6 +30,10 @@ from src.img_util import find_flat_region, numpy2tensor
 from src.video_util import (frame_to_video, get_fps, get_frame_count,
                             prepare_frames)
 
+inversed_model_dict = dict()
+for k, v in model_dict.items():
+    inversed_model_dict[v] = k
+
 to_tensor = T.PILToTensor()
 blur = T.GaussianBlur(kernel_size=(9, 9), sigma=(18, 18))
 
@@ -196,10 +200,13 @@ def cfg_to_input(filename):
     use_constraints = [
         'shape-aware fusion', 'pixel-aware fusion', 'color-aware AdaIN'
     ]
+
+    sd_model = inversed_model_dict.get(cfg.sd_model, 'Stable Diffusion 1.5')
+
     args = [
         cfg.input_path, cfg.prompt, cfg.image_resolution, cfg.control_strength,
         cfg.color_preserve, *cfg.crop, cfg.control_type, cfg.canny_low,
-        cfg.canny_high, cfg.ddim_steps, cfg.scale, cfg.seed, cfg.sd_model, '',
+        cfg.canny_high, cfg.ddim_steps, cfg.scale, cfg.seed, sd_model, '',
         cfg.n_prompt, cfg.interval, keyframe_count, cfg.x0_strength,
         use_constraints, *cfg.cross_period, cfg.style_update_freq,
         *cfg.warp_period, *cfg.mask_period, *cfg.ada_period, cfg.mask_strength,
@@ -498,9 +505,8 @@ def process2(*args):
             blend_results_rec_new = model.decode_first_stage(xtrg_)
             tmp = (abs(blend_results_rec_new - blend_results).mean(
                 dim=1, keepdims=True) > 0.25).float()
-            mask_x = F.max_pool2d((F.interpolate(tmp,
-                                                 scale_factor=1 / 8.,
-                                                 mode='bilinear') > 0).float(),
+            mask_x = F.max_pool2d((F.interpolate(
+                tmp, scale_factor=1 / 8., mode='bilinear') > 0).float(),
                                   kernel_size=3,
                                   stride=1,
                                   padding=1)
