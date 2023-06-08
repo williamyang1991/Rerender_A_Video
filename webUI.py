@@ -242,9 +242,9 @@ def process(*args):
 
 @torch.no_grad()
 def process1(*args):
+
     global global_video_path
     cfg = create_cfg(global_video_path, *args)
-
     global global_state
     global_state.update_sd_model(cfg.sd_model, cfg.control_type)
     global_state.update_controller(cfg.inner_strength, cfg.mask_period,
@@ -498,9 +498,8 @@ def process2(*args):
             blend_results_rec_new = model.decode_first_stage(xtrg_)
             tmp = (abs(blend_results_rec_new - blend_results).mean(
                 dim=1, keepdims=True) > 0.25).float()
-            mask_x = F.max_pool2d((F.interpolate(tmp,
-                                                 scale_factor=1 / 8.,
-                                                 mode='bilinear') > 0).float(),
+            mask_x = F.max_pool2d((F.interpolate(
+                tmp, scale_factor=1 / 8., mode='bilinear') > 0).float(),
                                   kernel_size=3,
                                   stride=1,
                                   padding=1)
@@ -809,10 +808,8 @@ with block:
                 use_poisson = gr.Checkbox(
                     label='Gradient blending',
                     value=True,
-                    info=
-                    ('Blend the output video in gradient,'
-                     ' to reduce ghosting artifacts (but may increase flickers)'
-                     ))
+                    info=('Blend the output video in gradient, to reduce'
+                          ' ghosting artifacts (but may increase flickers)'))
                 max_process = gr.Slider(label='Number of parallel processes',
                                         minimum=1,
                                         maximum=16,
@@ -906,15 +903,6 @@ with block:
     input_path.upload(input_uploaded, input_path, [interval, keyframe_count])
     interval.change(interval_changed, interval, keyframe_count)
 
-    ips = [
-        input_path, prompt, image_resolution, control_strength, color_preserve,
-        left_crop, right_crop, top_crop, bottom_crop, control_type,
-        low_threshold, high_threshold, ddim_steps, scale, seed, sd_model,
-        a_prompt, n_prompt, interval, keyframe_count, x0_strength,
-        use_constraints[0], cross_start, cross_end, style_update_freq,
-        warp_start, warp_end, mask_start, mask_end, ada_start, ada_end,
-        mask_strength, inner_strength, smooth_boundary
-    ]
     ips_process3 = [*ips, max_process, use_poisson]
     run_button.click(fn=process,
                      inputs=ips_process3,
