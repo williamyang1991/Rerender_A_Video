@@ -377,7 +377,8 @@ def rerender(cfg: RerenderConfig, first_img_only: bool, key_video_path: str):
         frame_to_video(key_video_path, cfg.key_dir, fps, False)
 
 
-def postprocess(cfg: RerenderConfig, ne: bool, max_process: int):
+def postprocess(cfg: RerenderConfig, ne: bool, max_process: int, tmp: bool,
+                ps: bool):
     video_base_dir = cfg.work_dir
     o_video = cfg.output_path
     fps = get_fps(cfg.input_path)
@@ -386,12 +387,14 @@ def postprocess(cfg: RerenderConfig, ne: bool, max_process: int):
     interval = cfg.interval
     key_dir = os.path.split(cfg.key_dir)[-1]
     use_e = '-ne' if ne else ''
+    use_tmp = '-tmp' if tmp else ''
+    use_ps = '-ps' if ps else ''
     o_video_cmd = f'--output {o_video}'
 
     cmd = (
         f'python video_blend.py {video_base_dir} --beg 1 --end {end_frame} '
         f'--itv {interval} --key {key_dir} {use_e} {o_video_cmd} --fps {fps} '
-        f'--n_proc {max_process}')
+        f'--n_proc {max_process} {use_tmp} {use_ps}')
     print(cmd)
     os.system(cmd)
 
@@ -407,14 +410,26 @@ if __name__ == '__main__':
     parser.add_argument('--prompt', type=str, default=None)
     parser.add_argument('--key_video_path', type=str, default=None)
     parser.add_argument('-one', action='store_true')
+    parser.add_argument('-nr',
+                        action='store_true',
+                        help='Do not run rerender and do postprocessing only')
+    parser.add_argument('-nb',
+                        action='store_true',
+                        help='Do not run postprocessing and run rerender only')
+    parser.add_argument(
+        '-ne',
+        action='store_true',
+        help='Do not run ebsynth (use previous ebsynth temporary output)')
+    parser.add_argument('-nps',
+                        action='store_true',
+                        help='Do not run poisson gradient blending')
     parser.add_argument('--n_proc',
                         type=int,
                         default=4,
                         help='The max process count')
-    parser.add_argument(
-        '-ne',
-        action='store_true',
-        help='Do not run ebsynth (use previous ebsynth output)')
+    parser.add_argument('--tmp',
+                        action='store_true',
+                        help='Keep ebsynth temporary output')
 
     args = parser.parse_args()
 
@@ -439,6 +454,8 @@ if __name__ == '__main__':
             exit(0)
         cfg.create_from_parameters(args.input, args.output, args.prompt)
 
-    rerender(cfg, args.one, args.key_video_path)
-    torch.cuda.empty_cache()
-    postprocess(cfg, args.ne, args.n_proc)
+    if not args.nr:
+        rerender(cfg, args.one, args.key_video_path)
+        torch.cuda.empty_cache()
+    if not args.nb:
+        postprocess(cfg, args.ne, args.n_proc, args.tmp, not args.nps)

@@ -217,10 +217,10 @@ def apply_color_correction(correction, original_image):
 
 @torch.no_grad()
 def process(*args):
-    args_wo_max_process = args[:-1]
-    first_frame = process1(*args_wo_max_process)
+    args_wo_process3 = args[:-2]
+    first_frame = process1(*args_wo_process3)
 
-    keypath = process2(*args_wo_max_process)
+    keypath = process2(*args_wo_process3)
 
     fullpath = process3(*args)
 
@@ -308,7 +308,7 @@ def process1(*args):
 
         # When not preserve color, draw a different frame at first and use its
         # color to redraw the first frame.
-        if not color_preserve:
+        if not cfg.color_preserve:
             first_strength = -1
         else:
             first_strength = cfg.x0_strength
@@ -554,8 +554,9 @@ def process2(*args):
 
 @torch.no_grad()
 def process3(*args):
-    max_process = args[-1]
-    args = args[:-1]
+    max_process = args[-2]
+    use_poisson = args[-1]
+    args = args[:-2]
     global global_state
     if global_state.processing_state != ProcessingState.KEY_IMGS:
         raise gr.Error('Please generate key images before propagation')
@@ -578,10 +579,10 @@ def process3(*args):
     interval = cfg.interval
     key_dir = os.path.split(cfg.key_dir)[-1]
     o_video_cmd = f'--output {o_video}'
-
+    ps = '-ps' if use_poisson else ''
     cmd = (f'python video_blend.py {video_base_dir} --beg 1 --end {end_frame} '
            f'--itv {interval} --key {key_dir}  {o_video_cmd} --fps {fps} '
-           f'--n_proc {max_process}')
+           f'--n_proc {max_process} {ps}')
     print(cmd)
     os.system(cmd)
 
@@ -787,14 +788,19 @@ with block:
                 smooth_boundary = gr.Checkbox(
                     label='Smooth fusion boundary',
                     value=True,
-                    info="select to prevent artifacts at boundary")
+                    info="Select to prevent artifacts at boundary")
             with gr.Accordion(
                     "Advanced options for the full video translation",
                     open=False):
+                use_poisson = gr.Checkbox(
+                    label='Gradient blending',
+                    value=True,
+                    info=("Blend the output video in gradient,"
+                          " make the result more smooth"))
                 max_process = gr.Slider(label="Number of parallel processes",
                                         minimum=1,
-                                        maximum=8,
-                                        value=8,
+                                        maximum=16,
+                                        value=4,
                                         step=1)
 
         with gr.Column():
@@ -846,14 +852,12 @@ with block:
         warp_start, warp_end, mask_start, mask_end, ada_start, ada_end,
         mask_strength, inner_strength, smooth_boundary
     ]
-    ips_with_max_process = [*ips, max_process]
+    ips_process3 = [*ips, max_process, use_poisson]
     run_button.click(fn=process,
-                     inputs=ips_with_max_process,
+                     inputs=ips_process3,
                      outputs=[result_image, result_keyframe, result_video])
     run_button1.click(fn=process1, inputs=ips, outputs=[result_image])
     run_button2.click(fn=process2, inputs=ips, outputs=[result_keyframe])
-    run_button3.click(fn=process3,
-                      inputs=ips_with_max_process,
-                      outputs=[result_video])
+    run_button3.click(fn=process3, inputs=ips_process3, outputs=[result_video])
 
 block.launch(server_name='0.0.0.0')
