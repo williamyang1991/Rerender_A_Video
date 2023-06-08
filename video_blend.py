@@ -1,9 +1,9 @@
 import argparse
 import os
+import platform
 import struct
 import subprocess
 import time
-import platform
 from typing import List
 
 import cv2
@@ -14,8 +14,8 @@ from numba import njit
 import blender.histogram_blend as histogram_blend
 from blender.guide import (BaseGuide, ColorGuide, EdgeGuide, PositionalGuide,
                            TemporalGuide)
-from blender.video_sequence import VideoSequence
 from blender.poisson_fusion import poisson_fusion
+from blender.video_sequence import VideoSequence
 from flow.flow_utils import flow_calc
 from src.video_util import frame_to_video
 
@@ -225,8 +225,9 @@ def process_seq(video_sequence: VideoSequence,
             mask = p_mask | mask
         p_mask = mask
 
-        #out_mask = np.expand_dims(mask, 2)
-        #cv2.imwrite(f'mask/mask_{c_id:04d}.jpg', out_mask * 255)
+        # Save tmp mask
+        # out_mask = np.expand_dims(mask, 2)
+        # cv2.imwrite(f'mask/mask_{c_id:04d}.jpg', out_mask * 255)
 
         min_error_img = assemble_min_error_img(oa, ob, mask)
         if blend_histogram:

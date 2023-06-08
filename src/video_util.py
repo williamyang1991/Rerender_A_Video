@@ -1,8 +1,8 @@
 import os
 
-import numpy as np
 import cv2
 import imageio
+import numpy as np
 
 
 def video_to_frame(video_path: str,
@@ -32,10 +32,7 @@ def video_to_frame(video_path: str,
     vidcap.release()
 
 
-def frame_to_video(video_path: str,
-                   frame_dir: str,
-                   fps=30,
-                   log=True):
+def frame_to_video(video_path: str, frame_dir: str, fps=30, log=True):
 
     first_img = True
     writer = imageio.get_writer(video_path, fps=fps)
@@ -44,7 +41,7 @@ def frame_to_video(video_path: str,
     for file_name in file_list:
         if not (file_name.endswith('jpg') or file_name.endswith('png')):
             continue
-        
+
         fn = os.path.join(frame_dir, file_name)
         curImg = imageio.imread(fn)
 
@@ -90,6 +87,7 @@ def resize_image(input_image, resolution):
 
 def prepare_frames(input_path: str, output_dir: str, resolution: int, crop):
     l, r, t, b = crop
+
     def crop_func(frame):
         H, W, C = frame.shape
         left = np.clip(l, 0, W)
