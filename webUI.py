@@ -788,7 +788,7 @@ with block:
                     label='Gradient blending',
                     value=True,
                     info=('Blend the output video in gradient,'
-                          ' make the result more smooth'))
+                          ' to reduce ghosting artifacts (but may increase flickers)'))
                 max_process = gr.Slider(label='Number of parallel processes',
                                         minimum=1,
                                         maximum=16,
