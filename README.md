@@ -27,7 +27,7 @@ https://github.com/williamyang1991/Rerender_A_Video/assets/18130694/7521be69-57c
 - [x] Add gr.Examples to webUI.
 - [x] Fix the temporary file name issue for webUI.
 - [x] Add Inference instructions in README.md.
-- [x] Add optional poisson fusion to the pipeline.
+- [x] ~~Add optional poisson fusion to the pipeline.~~
 - [x] ~~Add Installation instructions for Windows~~
 
 ## Installation
