@@ -310,9 +310,8 @@ def rerender(cfg: RerenderConfig, first_img_only: bool, key_video_path: str):
             blend_results_rec_new = model.decode_first_stage(xtrg_)
             tmp = (abs(blend_results_rec_new - blend_results).mean(
                 dim=1, keepdims=True) > 0.25).float()
-            mask_x = F.max_pool2d((F.interpolate(tmp,
-                                                 scale_factor=1 / 8.,
-                                                 mode='bilinear') > 0).float(),
+            mask_x = F.max_pool2d((F.interpolate(
+                tmp, scale_factor=1 / 8., mode='bilinear') > 0).float(),
                                   kernel_size=3,
                                   stride=1,
                                   padding=1)
