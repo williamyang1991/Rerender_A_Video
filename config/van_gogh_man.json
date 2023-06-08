@@ -1,7 +1,7 @@
 {
-    "input": "videos/teacher.mp4",
-    "output": "videos/teacher/blend.mp4",
-    "work_dir": "videos/teacher",
+    "input": "videos/pexels-antoni-shkraba-8048492-540x960-25fps.mp4",
+    "output": "videos/pexels-antoni-shkraba-8048492-540x960-25fps/blend.mp4",
+    "work_dir": "videos/pexels-antoni-shkraba-8048492-540x960-25fps",
     "key_subdir": "keys",
     "frame_count": 102,
     "interval": 10,
@@ -9,7 +9,7 @@
         0,
         0,
         0,
-        560
+        280
     ],
     "prompt": "a handsome man in van gogh painting, best quality, extremely detailed",
     "n_prompt": "longbody, lowres, bad anatomy, bad hands, missing fingers, extra digit, fewer digits, cropped, worst quality, low quality",
@@ -27,5 +27,5 @@
         0.8,
         1
     ],
-    "image_resolution": 256
+    "image_resolution": 512
 }
