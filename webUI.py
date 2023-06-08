@@ -131,7 +131,7 @@ class GlobalState:
 
 
 global_state = GlobalState()
-
+global_video_path = None
 video_frame_count = None
 
 
@@ -143,7 +143,6 @@ def create_cfg(input_path, prompt, image_resolution, control_strength,
                style_update_freq, warp_start, warp_end, mask_start, mask_end,
                ada_start, ada_end, mask_strength, inner_strength,
                smooth_boundary):
-
     use_warp = 'shape-aware fusion' in use_constraints
     use_mask = 'pixel-aware fusion' in use_constraints
     use_ada = 'color-aware AdaIN' in use_constraints
@@ -159,8 +158,6 @@ def create_cfg(input_path, prompt, image_resolution, control_strength,
     if not use_ada:
         ada_start = 1
         ada_end = 0
-
-    x0_strength = 1 - x0_strength
 
     input_name = os.path.split(input_path)[-1].split('.')[0]
     frame_count = 2 + keyframe_count * interval
@@ -193,6 +190,26 @@ def create_cfg(input_path, prompt, image_resolution, control_strength,
         smooth_boundary=smooth_boundary,
         color_preserve=color_preserve)
     return cfg
+
+
+def cfg_to_input(filename):
+
+    cfg = RerenderConfig()
+    cfg.create_from_path(filename)
+    keyframe_count = (cfg.frame_count - 2) // cfg.interval
+    use_constraints = [
+        'shape-aware fusion', 'pixel-aware fusion', 'color-aware AdaIN'
+    ]
+    args = [
+        cfg.input_path, cfg.prompt, cfg.image_resolution, cfg.control_strength,
+        cfg.color_preserve, *cfg.crop, cfg.control_type, cfg.canny_low,
+        cfg.canny_high, cfg.ddim_steps, cfg.scale, cfg.seed, cfg.sd_model, '',
+        cfg.n_prompt, cfg.interval, keyframe_count, cfg.x0_strength,
+        use_constraints, *cfg.cross_period, cfg.style_update_freq,
+        *cfg.warp_period, *cfg.mask_period, *cfg.ada_period, cfg.mask_strength,
+        cfg.inner_strength, cfg.smooth_boundary
+    ]
+    return args
 
 
 def setup_color_correction(image):
@@ -229,7 +246,8 @@ def process(*args):
 
 @torch.no_grad()
 def process1(*args):
-    cfg = create_cfg(*args)
+    global global_video_path
+    cfg = create_cfg(global_video_path, *args)
 
     global global_state
     global_state.update_sd_model(cfg.sd_model, cfg.control_type)
@@ -308,10 +326,10 @@ def process1(*args):
 
         # When not preserve color, draw a different frame at first and use its
         # color to redraw the first frame.
-        if not color_preserve:
+        if not cfg.color_preserve:
             first_strength = -1
         else:
-            first_strength = cfg.x0_strength
+            first_strength = 1 - cfg.x0_strength
 
         x_samples, x_samples_np = generate_first_img(img_, first_strength)
 
@@ -322,7 +340,8 @@ def process1(*args):
             img_ = apply_color_correction(color_corrections,
                                           Image.fromarray(img))
             img_ = to_tensor(img_).unsqueeze(0)[:, :3] / 127.5 - 1
-            x_samples, x_samples_np = generate_first_img(img_, cfg.x0_strength)
+            x_samples, x_samples_np = generate_first_img(
+                img_, 1 - cfg.x0_strength)
 
         global_state.first_result = x_samples
         global_state.first_img = img
@@ -341,7 +360,7 @@ def process2(*args):
         raise gr.Error('Please generate the first key image before generating'
                        ' all key images')
 
-    cfg = create_cfg(*args)
+    cfg = create_cfg(global_video_path, *args)
     global_state.update_sd_model(cfg.sd_model, cfg.control_type)
     global_state.update_detector(cfg.control_type, cfg.canny_low,
                                  cfg.canny_high)
@@ -449,7 +468,7 @@ def process2(*args):
             unconditional_conditioning=un_cond,
             controller=controller,
             x0=x0,
-            strength=cfg.x0_strength)
+            strength=1 - cfg.x0_strength)
         direct_result = model.decode_first_stage(samples)
 
         if not pixelfusion:
@@ -530,7 +549,7 @@ def process2(*args):
                 unconditional_conditioning=un_cond,
                 controller=controller,
                 x0=x0,
-                strength=cfg.x0_strength,
+                strength=1 - cfg.x0_strength,
                 xtrg=xtrg,
                 mask=masks,
                 noise_rescale=noise_rescale)
@@ -562,7 +581,7 @@ def process3(*args):
 
     global_state.clear_sd_model()
 
-    cfg = create_cfg(*args)
+    cfg = create_cfg(global_video_path, *args)
 
     # reset blend dir
     blend_dir = os.path.join(cfg.work_dir, 'blend')
@@ -797,6 +816,35 @@ with block:
                                         value=8,
                                         step=1)
 
+            with gr.Accordion("Example configs", open=True):
+                config_dir = 'config'
+                config_list = os.listdir(config_dir)
+                args_list = []
+                for config in config_list:
+                    try:
+                        config_path = os.path.join(config_dir, config)
+                        args = cfg_to_input(config_path)
+                        args_list.append(args)
+                    except FileNotFoundError:
+                        # The video file does not exist, skipped
+                        pass
+
+                ips = [
+                    prompt, image_resolution, control_strength, color_preserve,
+                    left_crop, right_crop, top_crop, bottom_crop, control_type,
+                    low_threshold, high_threshold, ddim_steps, scale, seed,
+                    sd_model, a_prompt, n_prompt, interval, keyframe_count,
+                    x0_strength, use_constraints[0], cross_start, cross_end,
+                    style_update_freq, warp_start, warp_end, mask_start,
+                    mask_end, ada_start, ada_end, mask_strength,
+                    inner_strength, smooth_boundary
+                ]
+
+                gr.Examples(
+                    examples=args_list,
+                    inputs=[input_path, *ips],
+                )
+
         with gr.Column():
             result_image = gr.Image(label='Output first frame',
                                     type='numpy',
@@ -809,7 +857,7 @@ with block:
                                     format='mp4',
                                     interactive=False)
 
-    def input_changed(path):
+    def input_uploaded(path):
         frame_count = get_frame_count(path)
         if frame_count <= 2:
             raise gr.Error('The input video is too short!'
@@ -820,10 +868,28 @@ with block:
 
         global video_frame_count
         video_frame_count = frame_count
+        global global_video_path
+        global_video_path = path
 
         return gr.Slider.update(value=default_interval,
                                 maximum=max_keyframe), gr.Slider.update(
                                     value=max_keyframe, maximum=max_keyframe)
+
+    def input_changed(path):
+        frame_count = get_frame_count(path)
+        if frame_count <= 2:
+            gr.Slider.update(maximum=1), gr.Slider.update(maximum=1)
+
+        default_interval = min(10, frame_count - 2)
+        max_keyframe = (frame_count - 2) // default_interval
+
+        global video_frame_count
+        video_frame_count = frame_count
+        global global_video_path
+        global_video_path = path
+
+        return gr.Slider.update(maximum=max_keyframe), \
+            gr.Slider.update(maximum=max_keyframe)
 
     def interval_changed(interval):
         global video_frame_count
@@ -835,17 +901,9 @@ with block:
         return gr.Slider.update(value=max_keyframe, maximum=max_keyframe)
 
     input_path.change(input_changed, input_path, [interval, keyframe_count])
+    input_path.upload(input_uploaded, input_path, [interval, keyframe_count])
     interval.change(interval_changed, interval, keyframe_count)
 
-    ips = [
-        input_path, prompt, image_resolution, control_strength, color_preserve,
-        left_crop, right_crop, top_crop, bottom_crop, control_type,
-        low_threshold, high_threshold, ddim_steps, scale, seed, sd_model,
-        a_prompt, n_prompt, interval, keyframe_count, x0_strength,
-        use_constraints[0], cross_start, cross_end, style_update_freq,
-        warp_start, warp_end, mask_start, mask_end, ada_start, ada_end,
-        mask_strength, inner_strength, smooth_boundary
-    ]
     ips_with_max_process = [*ips, max_process]
     run_button.click(fn=process,
                      inputs=ips_with_max_process,

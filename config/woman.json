@@ -8,7 +8,7 @@
     "sd_model": "models/revAnimated_v11.safetensors",
     "prompt": "a beautiful woman in CG style, best quality, extremely detailed",
     "n_prompt": "longbody, lowres, bad anatomy, bad hands, missing fingers, extra digit, fewer digits, cropped, worst quality, low quality",
-    "x0_strength": 0.25,
+    "x0_strength": 0.75,
     "control_type": "canny",
     "canny_low": 50,
     "canny_high": 100,
