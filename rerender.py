@@ -133,7 +133,7 @@ def rerender(cfg: RerenderConfig, first_img_only: bool, key_video_path: str):
     pixelfusion = True
     color_preserve = cfg.color_preserve
 
-    x0_strength = cfg.x0_strength
+    x0_strength = 1 - cfg.x0_strength
     mask_period = cfg.mask_period
     firstx0 = True
     controller = AttentionControl(cfg.inner_strength, cfg.mask_period,

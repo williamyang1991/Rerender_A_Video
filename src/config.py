@@ -48,7 +48,8 @@ class RerenderConfig:
         self.first_dir = os.path.join(self.work_dir, 'first')
 
         # Split video into frames
-        assert os.path.isfile(input_path), 'The input must be a video'
+        if not os.path.isfile(input_path):
+            raise FileNotFoundError(f'Cannot find video file {input_path}')
         self.input_dir = os.path.join(self.work_dir, 'video')
 
         self.frame_count = frame_count
