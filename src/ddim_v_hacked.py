@@ -260,7 +260,10 @@ class DDIMVSampler(object):
                       ucg_schedule=None,
                       controller=None,
                       strength=0.0):
-
+        
+        if strength == 1 and x0 is not None:
+            return x0, None
+        
         register_attention_control(self.model.model.diffusion_model,
                                    controller)
 

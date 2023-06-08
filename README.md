@@ -22,6 +22,13 @@ https://github.com/williamyang1991/Rerender_A_Video/assets/18130694/7521be69-57c
 
 - [05/2023] This website is created.
 
+### TODO
+- [x] Add gr.Examples to webUI.
+- [x] Fix the temporary file name issue for webUI.
+- [x] Add Inference instructions in README.md.
+- [x] ~~Add optional poisson fusion to the pipeline.~~
+- [x] ~~Add Installation instructions for Windows~~
+
 ## Installation
 
 1. Clone the repository.
@@ -55,6 +62,15 @@ python install.py
 ```shell
 python rerender.py --cfg config/real2sculpture.json
 ```
+
+<details>
+<summary>Installation on Windows</summary>
+
+  Before running the above 1-4 steps, you need prepare:
+1. Install [CUDA](https://developer.nvidia.com/cuda-toolkit-archive)
+2. Install [git](https://git-scm.com/download/win)
+3. Install [VS](https://visualstudio.microsoft.com/) with Windows 10/11 SDK (for building deps/ebsynth/bin/ebsynth.exe)
+</details>
 
 ## (1) Inference
 

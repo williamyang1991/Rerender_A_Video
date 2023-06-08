@@ -5,7 +5,6 @@ from enum import Enum
 import cv2
 import einops
 import gradio as gr
-import imageio
 import numpy as np
 import torch
 import torch.nn.functional as F
@@ -20,7 +19,6 @@ import src.import_util  # noqa: F401
 from deps.ControlNet.annotator.canny import CannyDetector
 from deps.ControlNet.annotator.hed import HEDdetector
 from deps.ControlNet.annotator.util import HWC3
-from deps.ControlNet.cldm.cldm import ControlLDM
 from deps.ControlNet.cldm.model import create_model, load_state_dict
 from deps.gmflow.gmflow.gmflow import GMFlow
 from flow.flow_utils import get_warped_and_mask
@@ -173,8 +171,8 @@ def create_cfg(input_path, prompt, image_resolution, control_strength,
         scale=scale,
         control_type=control_type,
         control_strength=control_strength,
-        low_threshold=low_threshold,
-        high_threshold=high_threshold,
+        canny_low=low_threshold,
+        canny_high=high_threshold,
         seed=seed,
         image_resolution=image_resolution,
         x0_strength=x0_strength,
@@ -232,10 +230,10 @@ def apply_color_correction(correction, original_image):
 
 @torch.no_grad()
 def process(*args):
-    args_wo_max_process = args[:-1]
-    first_frame = process1(*args_wo_max_process)
+    args_wo_process3 = args[:-2]
+    first_frame = process1(*args_wo_process3)
 
-    keypath = process2(*args_wo_max_process)
+    keypath = process2(*args_wo_process3)
 
     fullpath = process3(*args)
 
@@ -353,6 +351,7 @@ def process1(*args):
 @torch.no_grad()
 def process2(*args):
     global global_state
+    global global_video_path
 
     if global_state.processing_state != ProcessingState.FIRST_IMG:
         raise gr.Error('Please generate the first key image before generating'
@@ -499,8 +498,9 @@ def process2(*args):
             blend_results_rec_new = model.decode_first_stage(xtrg_)
             tmp = (abs(blend_results_rec_new - blend_results).mean(
                 dim=1, keepdims=True) > 0.25).float()
-            mask_x = F.max_pool2d((F.interpolate(
-                tmp, scale_factor=1 / 8., mode='bilinear') > 0).float(),
+            mask_x = F.max_pool2d((F.interpolate(tmp,
+                                                 scale_factor=1 / 8.,
+                                                 mode='bilinear') > 0).float(),
                                   kernel_size=3,
                                   stride=1,
                                   padding=1)
@@ -570,8 +570,10 @@ def process2(*args):
 
 @torch.no_grad()
 def process3(*args):
-    max_process = args[-1]
-    args = args[:-1]
+    max_process = args[-2]
+    use_poisson = args[-1]
+    args = args[:-2]
+    global global_video_path
     global global_state
     if global_state.processing_state != ProcessingState.KEY_IMGS:
         raise gr.Error('Please generate key images before propagation')
@@ -594,10 +596,10 @@ def process3(*args):
     interval = cfg.interval
     key_dir = os.path.split(cfg.key_dir)[-1]
     o_video_cmd = f'--output {o_video}'
-
+    ps = '-ps' if use_poisson else ''
     cmd = (f'python video_blend.py {video_base_dir} --beg 1 --end {end_frame} '
            f'--itv {interval} --key {key_dir}  {o_video_cmd} --fps {fps} '
-           f'--n_proc {max_process}')
+           f'--n_proc {max_process} {ps}')
     print(cmd)
     os.system(cmd)
 
@@ -610,7 +612,6 @@ with block:
         gr.Markdown('## Rerender A Video')
     with gr.Row():
         with gr.Column():
-            #input_image = gr.Image(source='upload', type="numpy")
             input_path = gr.Video(label='Input Video',
                                   source='upload',
                                   format='mp4',
@@ -645,9 +646,8 @@ with block:
                     maximum=1.05,
                     value=0.75,
                     step=0.05,
-                    info=
-                    '0: fully recover the input. 1.05: fully rerender the input.'
-                )
+                    info=('0: fully recover the input.'
+                          '1.05: fully rerender the input.'))
                 color_preserve = gr.Checkbox(
                     label='Preserve color',
                     value=True,
@@ -706,9 +706,9 @@ with block:
                                       value='best quality, extremely detailed')
                 n_prompt = gr.Textbox(
                     label='Negative prompt',
-                    value=
-                    'longbody, lowres, bad anatomy, bad hands, missing fingers, extra digit, fewer digits, cropped, worst quality, low quality'
-                )
+                    value=('longbody, lowres, bad anatomy, bad hands, '
+                           'missing fingers, extra digit, fewer digits, '
+                           'cropped, worst quality, low quality'))
             with gr.Accordion('Advanced options for the key fame translation',
                               open=False):
                 interval = gr.Slider(
@@ -752,9 +752,8 @@ with block:
                     maximum=100,
                     value=1,
                     step=1,
-                    info=
-                    'Update the key and value for cross-frame attention every N key frames'
-                )
+                    info=('Update the key and value for '
+                          'cross-frame attention every N key frames'))
                 with gr.Row():
                     warp_start = gr.Slider(label='Shape-aware fusion start',
                                            minimum=0,
@@ -803,14 +802,21 @@ with block:
                 smooth_boundary = gr.Checkbox(
                     label='Smooth fusion boundary',
                     value=True,
-                    info='select to prevent artifacts at boundary')
+                    info='Select to prevent artifacts at boundary')
             with gr.Accordion(
                     'Advanced options for the full video translation',
                     open=False):
+                use_poisson = gr.Checkbox(
+                    label='Gradient blending',
+                    value=True,
+                    info=
+                    ('Blend the output video in gradient,'
+                     ' to reduce ghosting artifacts (but may increase flickers)'
+                     ))
                 max_process = gr.Slider(label='Number of parallel processes',
                                         minimum=1,
-                                        maximum=8,
-                                        value=8,
+                                        maximum=16,
+                                        value=4,
                                         step=1)
 
             with gr.Accordion('Example configs', open=True):
@@ -846,7 +852,6 @@ with block:
             result_image = gr.Image(label='Output first frame',
                                     type='numpy',
                                     interactive=False)
-            #result_gallery = gr.Gallery(label='Output key frames', show_label=False, elem_id="gallery").style(grid=2, height='auto')
             result_keyframe = gr.Video(label='Output key frame video',
                                        format='mp4',
                                        interactive=False)
@@ -901,14 +906,21 @@ with block:
     input_path.upload(input_uploaded, input_path, [interval, keyframe_count])
     interval.change(interval_changed, interval, keyframe_count)
 
-    ips_with_max_process = [*ips, max_process]
+    ips = [
+        input_path, prompt, image_resolution, control_strength, color_preserve,
+        left_crop, right_crop, top_crop, bottom_crop, control_type,
+        low_threshold, high_threshold, ddim_steps, scale, seed, sd_model,
+        a_prompt, n_prompt, interval, keyframe_count, x0_strength,
+        use_constraints[0], cross_start, cross_end, style_update_freq,
+        warp_start, warp_end, mask_start, mask_end, ada_start, ada_end,
+        mask_strength, inner_strength, smooth_boundary
+    ]
+    ips_process3 = [*ips, max_process, use_poisson]
     run_button.click(fn=process,
-                     inputs=ips_with_max_process,
+                     inputs=ips_process3,
                      outputs=[result_image, result_keyframe, result_video])
     run_button1.click(fn=process1, inputs=ips, outputs=[result_image])
     run_button2.click(fn=process2, inputs=ips, outputs=[result_keyframe])
-    run_button3.click(fn=process3,
-                      inputs=ips_with_max_process,
-                      outputs=[result_video])
+    run_button3.click(fn=process3, inputs=ips_process3, outputs=[result_video])
 
 block.launch(server_name='0.0.0.0')
