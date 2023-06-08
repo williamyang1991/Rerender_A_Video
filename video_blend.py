@@ -1,5 +1,6 @@
 import argparse
 import os
+import platform
 import struct
 import subprocess
 import time
@@ -13,12 +14,25 @@ from numba import njit
 import blender.histogram_blend as histogram_blend
 from blender.guide import (BaseGuide, ColorGuide, EdgeGuide, PositionalGuide,
                            TemporalGuide)
+from blender.poisson_fusion import poisson_fusion
 from blender.video_sequence import VideoSequence
 from flow.flow_utils import flow_calc
 from src.video_util import frame_to_video
 
 OPEN_EBSYNTH_LOG = False
 MAX_PROCESS = 8
+
+os_str = platform.system()
+
+if os_str == 'Windows':
+    ebsynth_bin = '.\\deps\\ebsynth\\bin\\ebsynth.exe'
+elif os_str == 'Linux':
+    ebsynth_bin = './deps/ebsynth/bin/ebsynth'
+elif os_str == 'Darwin':
+    ebsynth_bin = './deps/ebsynth/bin/ebsynth.app'
+else:
+    print('Cannot recognize OS. Run Ebsynth failed.')
+    exit(0)
 
 
 @njit
@@ -46,9 +60,6 @@ def create_sequence(base_dir, beg, end, interval, key_dir):
     sequence = VideoSequence(base_dir, beg, end, interval, 'video', key_dir,
                              'tmp', '%04d.png', '%04d.png')
     return sequence
-
-
-ebsynth_bin = './deps/ebsynth/bin/ebsynth'
 
 
 def process_one_sequence(i, video_sequence: VideoSequence):
@@ -214,8 +225,9 @@ def process_seq(video_sequence: VideoSequence,
             mask = p_mask | mask
         p_mask = mask
 
-        out_mask = np.expand_dims(mask, 2)
-        #cv2.imwrite(f'mask/mask_{c_id:04d}.jpg', out_mask * 255)
+        # Save tmp mask
+        # out_mask = np.expand_dims(mask, 2)
+        # cv2.imwrite(f'mask/mask_{c_id:04d}.jpg', out_mask * 255)
 
         min_error_img = assemble_min_error_img(oa, ob, mask)
         if blend_histogram:
@@ -232,9 +244,7 @@ def process_seq(video_sequence: VideoSequence,
 
         # gradient blend
         if blend_gradient:
-            ...
-            # TODO: update gradient blend
-            res = hb_res
+            res = poisson_fusion(hb_res, oa, ob, mask)
         else:
             res = hb_res
 
@@ -252,7 +262,7 @@ def main(args):
     if not args.ne:
         run_ebsynth(video_sequence)
     blend_histogram = True
-    blend_gradient = False
+    blend_gradient = args.ps
     for i in range(video_sequence.n_seq):
         process_seq(video_sequence, i, blend_histogram, blend_gradient)
     if args.output:
@@ -293,13 +303,16 @@ if __name__ == '__main__':
                         type=int,
                         default=8,
                         help='The max process count')
+    parser.add_argument('-ps',
+                        action='store_true',
+                        help='Use poisson gradient blending')
     parser.add_argument(
         '-ne',
         action='store_true',
         help='Do not run ebsynth (use previous ebsynth output)')
     parser.add_argument('-tmp',
                         action='store_true',
-                        help='Keep temporary results')
+                        help='Keep temporary output')
 
     args = parser.parse_args()
     main(args)

@@ -1,12 +1,10 @@
-import gradio as gr
-import torch
-import imageio
-import cv2
 import os
-from enum import Enum
 import shutil
+from enum import Enum
 
+import cv2
 import einops
+import gradio as gr
 import numpy as np
 import torch
 import torch.nn.functional as F
@@ -21,18 +19,16 @@ import src.import_util  # noqa: F401
 from deps.ControlNet.annotator.canny import CannyDetector
 from deps.ControlNet.annotator.hed import HEDdetector
 from deps.ControlNet.annotator.util import HWC3
-from deps.ControlNet.cldm.cldm import ControlLDM
 from deps.ControlNet.cldm.model import create_model, load_state_dict
 from deps.gmflow.gmflow.gmflow import GMFlow
 from flow.flow_utils import get_warped_and_mask
+from sd_model_cfg import model_dict
 from src.config import RerenderConfig
 from src.controller import AttentionControl
 from src.ddim_v_hacked import DDIMVSampler
 from src.img_util import find_flat_region, numpy2tensor
 from src.video_util import (frame_to_video, get_fps, get_frame_count,
                             prepare_frames)
-
-from sd_model_cfg import model_dict
 
 to_tensor = T.PILToTensor()
 blur = T.GaussianBlur(kernel_size=(9, 9), sigma=(18, 18))
@@ -217,10 +213,10 @@ def apply_color_correction(correction, original_image):
 
 @torch.no_grad()
 def process(*args):
-    args_wo_max_process = args[:-1]
-    first_frame = process1(*args_wo_max_process)
+    args_wo_process3 = args[:-2]
+    first_frame = process1(*args_wo_process3)
 
-    keypath = process2(*args_wo_max_process)
+    keypath = process2(*args_wo_process3)
 
     fullpath = process3(*args)
 
@@ -308,7 +304,7 @@ def process1(*args):
 
         # When not preserve color, draw a different frame at first and use its
         # color to redraw the first frame.
-        if not color_preserve:
+        if not cfg.color_preserve:
             first_strength = -1
         else:
             first_strength = cfg.x0_strength
@@ -482,9 +478,8 @@ def process2(*args):
             blend_results_rec_new = model.decode_first_stage(xtrg_)
             tmp = (abs(blend_results_rec_new - blend_results).mean(
                 dim=1, keepdims=True) > 0.25).float()
-            mask_x = F.max_pool2d((F.interpolate(tmp,
-                                                 scale_factor=1 / 8.,
-                                                 mode='bilinear') > 0).float(),
+            mask_x = F.max_pool2d((F.interpolate(
+                tmp, scale_factor=1 / 8., mode='bilinear') > 0).float(),
                                   kernel_size=3,
                                   stride=1,
                                   padding=1)
@@ -554,8 +549,9 @@ def process2(*args):
 
 @torch.no_grad()
 def process3(*args):
-    max_process = args[-1]
-    args = args[:-1]
+    max_process = args[-2]
+    use_poisson = args[-1]
+    args = args[:-2]
     global global_state
     if global_state.processing_state != ProcessingState.KEY_IMGS:
         raise gr.Error('Please generate key images before propagation')
@@ -578,10 +574,10 @@ def process3(*args):
     interval = cfg.interval
     key_dir = os.path.split(cfg.key_dir)[-1]
     o_video_cmd = f'--output {o_video}'
-
+    ps = '-ps' if use_poisson else ''
     cmd = (f'python video_blend.py {video_base_dir} --beg 1 --end {end_frame} '
            f'--itv {interval} --key {key_dir}  {o_video_cmd} --fps {fps} '
-           f'--n_proc {max_process}')
+           f'--n_proc {max_process} {ps}')
     print(cmd)
     os.system(cmd)
 
@@ -591,118 +587,116 @@ def process3(*args):
 block = gr.Blocks().queue()
 with block:
     with gr.Row():
-        gr.Markdown("## Rerender A Video")
+        gr.Markdown('## Rerender A Video')
     with gr.Row():
         with gr.Column():
-            #input_image = gr.Image(source='upload', type="numpy")
-            input_path = gr.Video(label="Input Video",
+            input_path = gr.Video(label='Input Video',
                                   source='upload',
-                                  format="mp4",
+                                  format='mp4',
                                   visible=True)
-            prompt = gr.Textbox(label="Prompt")
-            seed = gr.Slider(label="Seed",
+            prompt = gr.Textbox(label='Prompt')
+            seed = gr.Slider(label='Seed',
                              minimum=0,
                              maximum=2147483647,
                              step=1,
                              value=0,
                              randomize=True)
-            run_button = gr.Button(value="Run All")
+            run_button = gr.Button(value='Run All')
             with gr.Row():
-                run_button1 = gr.Button(value="Run 1st Key Frame")
-                run_button2 = gr.Button(value="Run Key Frames")
-                run_button3 = gr.Button(value="Run Propagation")
-            with gr.Accordion("Advanced options for the 1st frame translation",
+                run_button1 = gr.Button(value='Run 1st Key Frame')
+                run_button2 = gr.Button(value='Run Key Frames')
+                run_button3 = gr.Button(value='Run Propagation')
+            with gr.Accordion('Advanced options for the 1st frame translation',
                               open=False):
-                image_resolution = gr.Slider(label="Frame rsolution",
+                image_resolution = gr.Slider(label='Frame rsolution',
                                              minimum=256,
                                              maximum=768,
                                              value=512,
                                              step=64)
-                control_strength = gr.Slider(label="ControNet strength",
+                control_strength = gr.Slider(label='ControNet strength',
                                              minimum=0.0,
                                              maximum=2.0,
                                              value=1.0,
                                              step=0.01)
                 x0_strength = gr.Slider(
-                    label="Denoising strength",
+                    label='Denoising strength',
                     minimum=0.00,
                     maximum=1.05,
                     value=0.75,
                     step=0.05,
-                    info=
-                    "0: fully recover the input. 1.05: fully rerender the input."
-                )
+                    info=('0: fully recover the input.'
+                          '1.05: fully rerender the input.'))
                 color_preserve = gr.Checkbox(
                     label='Preserve color',
                     value=True,
-                    info="Keep the color of the input video")
+                    info='Keep the color of the input video')
                 with gr.Row():
-                    left_crop = gr.Slider(label="Left crop length",
+                    left_crop = gr.Slider(label='Left crop length',
                                           minimum=0,
                                           maximum=512,
                                           value=0,
                                           step=1)
-                    right_crop = gr.Slider(label="Right crop length",
+                    right_crop = gr.Slider(label='Right crop length',
                                            minimum=0,
                                            maximum=512,
                                            value=0,
                                            step=1)
                 with gr.Row():
-                    top_crop = gr.Slider(label="Top crop length",
+                    top_crop = gr.Slider(label='Top crop length',
                                          minimum=0,
                                          maximum=512,
                                          value=0,
                                          step=1)
-                    bottom_crop = gr.Slider(label="Bottom crop length",
+                    bottom_crop = gr.Slider(label='Bottom crop length',
                                             minimum=0,
                                             maximum=512,
                                             value=0,
                                             step=1)
                 with gr.Row():
-                    control_type = gr.Dropdown(["HED", "canny"],
-                                               label="Control type",
-                                               value="HED")
-                    low_threshold = gr.Slider(label="Canny low threshold",
+                    control_type = gr.Dropdown(['HED', 'canny'],
+                                               label='Control type',
+                                               value='HED')
+                    low_threshold = gr.Slider(label='Canny low threshold',
                                               minimum=1,
                                               maximum=255,
                                               value=100,
                                               step=1)
-                    high_threshold = gr.Slider(label="Canny high threshold",
+                    high_threshold = gr.Slider(label='Canny high threshold',
                                                minimum=1,
                                                maximum=255,
                                                value=200,
                                                step=1)
-                ddim_steps = gr.Slider(label="Steps",
+                ddim_steps = gr.Slider(label='Steps',
                                        minimum=1,
                                        maximum=100,
                                        value=20,
                                        step=1)
-                scale = gr.Slider(label="CFG scale",
+                scale = gr.Slider(label='CFG scale',
                                   minimum=0.1,
                                   maximum=30.0,
                                   value=7.5,
                                   step=0.1)
                 sd_model_list = list(model_dict.keys())
                 sd_model = gr.Dropdown(sd_model_list,
-                                       label="Base model",
-                                       value="Stable Diffusion 1.5")
-                a_prompt = gr.Textbox(label="Added prompt",
+                                       label='Base model',
+                                       value='Stable Diffusion 1.5')
+                a_prompt = gr.Textbox(label='Added prompt',
                                       value='best quality, extremely detailed')
                 n_prompt = gr.Textbox(
-                    label="Negative prompt",
-                    value=
-                    'longbody, lowres, bad anatomy, bad hands, missing fingers, extra digit, fewer digits, cropped, worst quality, low quality'
-                )
-            with gr.Accordion("Advanced options for the key fame translation",
+                    label='Negative prompt',
+                    value=('longbody, lowres, bad anatomy, bad hands, '
+                           'missing fingers, extra digit, fewer digits, '
+                           'cropped, worst quality, low quality'))
+            with gr.Accordion('Advanced options for the key fame translation',
                               open=False):
                 interval = gr.Slider(
-                    label="Key frame frequency (K)",
+                    label='Key frame frequency (K)',
                     minimum=1,
                     maximum=1,
                     value=1,
                     step=1,
-                    info="Uniformly sample the key frames every K frames")
-                keyframe_count = gr.Slider(label="Number of key frames",
+                    info='Uniformly sample the key frames every K frames')
+                keyframe_count = gr.Slider(label='Number of key frames',
                                            minimum=1,
                                            maximum=1,
                                            value=1,
@@ -710,98 +704,101 @@ with block:
 
                 use_constraints = gr.CheckboxGroup(
                     [
-                        "shape-aware fusion", "pixel-aware fusion",
-                        "color-aware AdaIN"
+                        'shape-aware fusion', 'pixel-aware fusion',
+                        'color-aware AdaIN'
                     ],
-                    label="Select the cross-frame contraints to be used",
+                    label='Select the cross-frame contraints to be used',
                     value=[
-                        "shape-aware fusion", "pixel-aware fusion",
-                        "color-aware AdaIN"
+                        'shape-aware fusion', 'pixel-aware fusion',
+                        'color-aware AdaIN'
                     ]),
                 with gr.Row():
                     cross_start = gr.Slider(
-                        label="Cross-frame attention start",
+                        label='Cross-frame attention start',
                         minimum=0,
                         maximum=1,
                         value=0,
                         step=0.05)
-                    cross_end = gr.Slider(label="Cross-frame attention end",
+                    cross_end = gr.Slider(label='Cross-frame attention end',
                                           minimum=0,
                                           maximum=1,
                                           value=1,
                                           step=0.05)
                 style_update_freq = gr.Slider(
-                    label="Cross-frame attention update frequency",
+                    label='Cross-frame attention update frequency',
                     minimum=1,
                     maximum=100,
                     value=1,
                     step=1,
-                    info=
-                    "Update the key and value for cross-frame attention every N key frames"
-                )
+                    info=('Update the key and value for '
+                          'cross-frame attention every N key frames'))
                 with gr.Row():
-                    warp_start = gr.Slider(label="Shape-aware fusion start",
+                    warp_start = gr.Slider(label='Shape-aware fusion start',
                                            minimum=0,
                                            maximum=1,
                                            value=0,
                                            step=0.05)
-                    warp_end = gr.Slider(label="Shape-aware fusion end",
+                    warp_end = gr.Slider(label='Shape-aware fusion end',
                                          minimum=0,
                                          maximum=1,
                                          value=0.1,
                                          step=0.05)
                 with gr.Row():
-                    mask_start = gr.Slider(label="Pixel-aware fusion start",
+                    mask_start = gr.Slider(label='Pixel-aware fusion start',
                                            minimum=0,
                                            maximum=1,
                                            value=0.5,
                                            step=0.05)
-                    mask_end = gr.Slider(label="Pixel-aware fusion end",
+                    mask_end = gr.Slider(label='Pixel-aware fusion end',
                                          minimum=0,
                                          maximum=1,
                                          value=0.8,
                                          step=0.05)
                 with gr.Row():
-                    ada_start = gr.Slider(label="Color-aware AdaIN start",
+                    ada_start = gr.Slider(label='Color-aware AdaIN start',
                                           minimum=0,
                                           maximum=1,
                                           value=0.8,
                                           step=0.05)
-                    ada_end = gr.Slider(label="Color-aware AdaIN end",
+                    ada_end = gr.Slider(label='Color-aware AdaIN end',
                                         minimum=0,
                                         maximum=1,
                                         value=1,
                                         step=0.05)
-                mask_strength = gr.Slider(label="Pixel-aware fusion stength",
+                mask_strength = gr.Slider(label='Pixel-aware fusion stength',
                                           minimum=0,
                                           maximum=1,
                                           value=0.5,
                                           step=0.01)
                 inner_strength = gr.Slider(
-                    label="Pixel-aware fusion detail level",
+                    label='Pixel-aware fusion detail level',
                     minimum=0.5,
                     maximum=1,
                     value=0.9,
                     step=0.01,
-                    info="Use a low value to prevent artifacts")
+                    info='Use a low value to prevent artifacts')
                 smooth_boundary = gr.Checkbox(
                     label='Smooth fusion boundary',
                     value=True,
-                    info="select to prevent artifacts at boundary")
+                    info='Select to prevent artifacts at boundary')
             with gr.Accordion(
-                    "Advanced options for the full video translation",
+                    'Advanced options for the full video translation',
                     open=False):
-                max_process = gr.Slider(label="Number of parallel processes",
+                use_poisson = gr.Checkbox(
+                    label='Gradient blending',
+                    value=True,
+                    info=('Blend the output video in gradient,'
+                          ' make the result more smooth'))
+                max_process = gr.Slider(label='Number of parallel processes',
                                         minimum=1,
-                                        maximum=8,
-                                        value=8,
+                                        maximum=16,
+                                        value=4,
                                         step=1)
 
         with gr.Column():
             result_image = gr.Image(label='Output first frame',
                                     type='numpy',
                                     interactive=False)
-            #result_gallery = gr.Gallery(label='Output key frames', show_label=False, elem_id="gallery").style(grid=2, height='auto')
             result_keyframe = gr.Video(label='Output key frame video',
                                        format='mp4',
                                        interactive=False)
@@ -846,14 +843,12 @@ with block:
         warp_start, warp_end, mask_start, mask_end, ada_start, ada_end,
         mask_strength, inner_strength, smooth_boundary
     ]
-    ips_with_max_process = [*ips, max_process]
+    ips_process3 = [*ips, max_process, use_poisson]
     run_button.click(fn=process,
-                     inputs=ips_with_max_process,
+                     inputs=ips_process3,
                      outputs=[result_image, result_keyframe, result_video])
     run_button1.click(fn=process1, inputs=ips, outputs=[result_image])
     run_button2.click(fn=process2, inputs=ips, outputs=[result_keyframe])
-    run_button3.click(fn=process3,
-                      inputs=ips_with_max_process,
-                      outputs=[result_video])
+    run_button3.click(fn=process3, inputs=ips_process3, outputs=[result_video])
 
 block.launch(server_name='0.0.0.0')
