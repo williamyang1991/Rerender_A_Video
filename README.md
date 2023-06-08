@@ -23,7 +23,6 @@ https://github.com/williamyang1991/Rerender_A_Video/assets/18130694/7521be69-57c
 - [05/2023] This website is created.
 
 ### TODO
-- [x] Modify ebsynth_bin in video_blend.py for Windows
 - [x] Add gr.Examples to webUI.
 - [x] Fix the temporary file name issue for webUI.
 - [x] Add Inference instructions in README.md.
