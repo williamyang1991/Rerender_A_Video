@@ -79,6 +79,7 @@ TODO
 3. Rerender the full key frames
 4. Rerender the full video with propagation
 5. Use your own customized model
+6. Tips
 
 ## (2) Results
 
