@@ -642,7 +642,7 @@ with block:
                 run_button3 = gr.Button(value='Run Propagation')
             with gr.Accordion('Advanced options for the 1st frame translation',
                               open=False):
-                image_resolution = gr.Slider(label='Frame rsolution',
+                image_resolution = gr.Slider(label='Frame resolution',
                                              minimum=256,
                                              maximum=768,
                                              value=512,
