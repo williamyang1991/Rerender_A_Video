@@ -97,7 +97,17 @@ class TemporalGuide(BaseGuide):
             warped_img = self.stylized_imgs[0]
         else:
             prev_img = cv2.imread(self.stylized_imgs[i - 1])
-            warped_img = flow_calc.warp(prev_img, self.flows[i - 1])
+            warped_img = flow_calc.warp(prev_img, self.flows[i - 1],
+                                        'nearest').astype(np.uint8)
+
+            gray = warped_img[:, :, 0].astype(np.float32)
+            gray += warped_img[:, :, 1]
+            gray += warped_img[:, :, 2]
+            gray /= 3
+            _, mask = cv2.threshold(gray, 20, 255, cv2.THRESH_BINARY_INV)
+            mask = mask.astype(np.uint8)
+            warped_img = cv2.inpaint(warped_img, mask, 30, cv2.INPAINT_TELEA)
+
             cv2.imwrite(self.imgs[i], warped_img)
 
         return super().get_cmd(i, weight)
