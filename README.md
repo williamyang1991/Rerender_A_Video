@@ -23,6 +23,8 @@ https://github.com/williamyang1991/Rerender_A_Video/assets/18130694/7521be69-57c
 - [05/2023] This website is created.
 
 ### TODO
+- [x] Fix the bug of black boundary during propagation.
+- [x] Integrate into Diffusers.
 - [x] Add Inference instructions in README.md.
 - [x] ~~Add Examples to webUI.~~
 - [x] ~~Add optional poisson fusion to the pipeline.~~
