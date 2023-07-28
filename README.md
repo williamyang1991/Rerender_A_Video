@@ -75,6 +75,27 @@ python rerender.py --cfg config/real2sculpture.json
 
 ## (1) Inference
 
+### WebUI (recommended)
+
+```
+python webUI.py
+```
+The Gradio app also allows you to flexibly change the inference options. Just try it for more details.
+
+Upload your video, input the prompt, select the seed, and hit:
+- **Run 1st Key Frame**: only translate the first frame, so you can adjust the prompts/models/parameters to find your ideal output appearance before running the whole video.
+- **Run Key Frames**: translate all the key frames based on the settings of the first frame, so you can adjust the temporal-related parameters for better temporal consistency before running the whole video.
+- **Run Propogation**: propogate the key frames to other frames for full video translation
+- **Run All**: **Run 1st Key Frame**, **Run Key Frames** and **Run Propogation**
+
+![UI](https://github.com/williamyang1991/Rerender_A_Video/assets/18130694/d4d9160d-0990-4397-bf3d-07edcf56a738)
+
+We provide abundant inference options to play with
+
+
+![options](https://github.com/williamyang1991/Rerender_A_Video/assets/18130694/d133e495-01f1-456f-8c41-0ff319721781)
+
+
 TODO
 1. WeUI (recommended)
 2. Rerender the first key frame
