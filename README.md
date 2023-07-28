@@ -102,6 +102,20 @@ We provide abundant advanced options to play with
 
 </details>
 
+<details>
+<summary> <b>Advanced options for the key frame translation</b></summary>
+
+1. Frame Resolution
+2. 
+
+</details>
+
+<details>
+<summary> <b>Advanced options for the full video translation</b></summary>
+  
+1. **Gradient blending**: apply Poisson Blending to reduce ghosting artifats. Will slow the process and may increase flickers.
+2. **Number of parallel processes**: multiprocessing to speed up the process. Large value (8) is recommended.
+</details>
 
 ![options](https://github.com/williamyang1991/Rerender_A_Video/assets/18130694/d133e495-01f1-456f-8c41-0ff319721781)
 
