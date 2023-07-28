@@ -22,6 +22,7 @@ https://github.com/williamyang1991/Rerender_A_Video/assets/18130694/7521be69-57c
 
 ## Updates
 
+- [06/2023] Integrated to 🤗 [Hugging Face](https://huggingface.co/spaces/Anonymous-sub/Rerender). Enjoy the web demo!
 - [05/2023] This website is created.
 
 ### TODO
