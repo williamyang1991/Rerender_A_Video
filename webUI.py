@@ -647,7 +647,7 @@ with block:
                                              maximum=768,
                                              value=512,
                                              step=64)
-                control_strength = gr.Slider(label='ControNet strength',
+                control_strength = gr.Slider(label='ControlNet strength',
                                              minimum=0.0,
                                              maximum=2.0,
                                              value=1.0,
