@@ -162,14 +162,13 @@ We provide abundant advanced options to play with
 ![options](https://github.com/williamyang1991/Rerender_A_Video/assets/18130694/d133e495-01f1-456f-8c41-0ff319721781)
 
 
+TODO FOR COMMAND LINE
+1. Rerender the first key frame
+2. Rerender the full key frames
+3. Rerender the full video with propagation
+4. Use your own customized model
+5. Tips
 
-TODO
-1. WeUI (recommended)
-2. Rerender the first key frame
-3. Rerender the full key frames
-4. Rerender the full video with propagation
-5. Use your own customized model
-6. Tips
 
 ## (2) Results
 
