@@ -111,8 +111,22 @@ We provide abundant advanced options to play with
 <details>
 <summary> <b>Advanced options for the 1st frame translation</b></summary>
 
-1. Frame Resolution
-2. 
+1. Resolution related (Frame resolution, left/top/right/bottom crop length): crop the frame and resize its short side to 512.
+2. ControlNet related:
+   1. ControlNet strength: how well the output matches the input control edges
+   2. Control type: HED edge or Canny edge
+   3. Canny low/high threshold: low values for more edge details
+3. SDEdit related:
+   1. Denoising strength: repaint degree (low value to make the output look more like the original video)
+   2. Preserve color: preserve the color of the original video
+4. SD related:
+   1. Steps: denoising step
+   2. CFG scale: how well the output matches the prompt
+   3. Base model: base Stable Diffusion model (SD 1.5)
+      1. Stable Diffusion 1.5: official model
+      2. [revAnimated_v11](https://civitai.com/models/7371/rev-animated?modelVersionId=19575): a semi-realistic (2.5D) model
+      3. [realisticVisionV20_v20](https://civitai.com/models/4201?modelVersionId=29460): a photo-realistic model
+   4. Added prompt/Negative prompt: supplementary prompts
 
 </details>
 
