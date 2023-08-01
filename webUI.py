@@ -799,7 +799,7 @@ with block:
                                         maximum=1,
                                         value=1,
                                         step=0.05)
-                mask_strength = gr.Slider(label='Pixel-aware fusion stength',
+                mask_strength = gr.Slider(label='Pixel-aware fusion strength',
                                           minimum=0,
                                           maximum=1,
                                           value=0.5,
