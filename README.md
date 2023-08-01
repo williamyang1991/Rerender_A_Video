@@ -123,9 +123,9 @@ We provide abundant advanced options to play with
    - **Steps**: denoising step
    - **CFG scale**: how well the output matches the prompt
    - **Base model**: base Stable Diffusion model (SD 1.5)
-      - Stable Diffusion 1.5: official model
-      - [revAnimated_v11](https://civitai.com/models/7371/rev-animated?modelVersionId=19575): a semi-realistic (2.5D) model
-      - [realisticVisionV20_v20](https://civitai.com/models/4201?modelVersionId=29460): a photo-realistic model
+     - Stable Diffusion 1.5: official model
+     - [revAnimated_v11](https://civitai.com/models/7371/rev-animated?modelVersionId=19575): a semi-realistic (2.5D) model
+     - [realisticVisionV20_v20](https://civitai.com/models/4201?modelVersionId=29460): a photo-realistic model
    - **Added prompt/Negative prompt**: supplementary prompts
 
 </details>
@@ -133,8 +133,16 @@ We provide abundant advanced options to play with
 <details>
 <summary> <b>Advanced options for the key frame translation</b></summary>
 
-1. Frame Resolution
-2. 
+1. Key frame related
+   - **Key frame frequency (K)**: Uniformly sample the key frame every K frames. Small value for large or fast motions.
+   - **Number of key frames (N)**: The final output video will have K*N+1 frames with N+1 key frames.
+2. Temporal consistency related
+   - Cross-frame attention
+     - **Cross-frame attention start/end**: When applying cross-frame attention for global style consistency
+   - Shape-aware fusion
+     - **Shape-aware fusion start/end**
+   - Pixel-aware fusion
+   - Color-aware AdaIN
 
 </details>
 
