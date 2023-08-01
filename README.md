@@ -96,6 +96,19 @@ Upload your video, input the prompt, select the seed, and hit:
 We provide abundant advanced options to play with
 
 <details>
+<summary> <b>Using customized models</b></summary>
+
+- Using LoRA/Dreambooth/Finetuned/Mixed SD models
+  - Modify `sd_model_cfg.py` to add paths to the saved SD models
+- Using other controls from ControlNet (e.g., Depth, Pose)
+  - Add more options like `control_type = gr.Dropdown(['HED', 'canny', 'depth']` here https://github.com/williamyang1991/Rerender_A_Video/blob/b6cafb5d80a79a3ef831c689ffad92ec095f2794/webUI.py#L690
+  - Add model loading options like `elif control_type == 'depth':` following https://github.com/williamyang1991/Rerender_A_Video/blob/b6cafb5d80a79a3ef831c689ffad92ec095f2794/webUI.py#L88
+  - Add model detectors like `elif control_type == 'depth':` following https://github.com/williamyang1991/Rerender_A_Video/blob/b6cafb5d80a79a3ef831c689ffad92ec095f2794/webUI.py#L122
+  - One example is given [here](https://huggingface.co/spaces/Anonymous-sub/Rerender/discussions/10/files) 
+  
+</details>
+
+<details>
 <summary> <b>Advanced options for the 1st frame translation</b></summary>
 
 1. Frame Resolution
@@ -114,11 +127,12 @@ We provide abundant advanced options to play with
 <details>
 <summary> <b>Advanced options for the full video translation</b></summary>
   
-1. **Gradient blending**: apply Poisson Blending to reduce ghosting artifats. Will slow the process and may increase flickers.
+1. **Gradient blending**: apply Poisson Blending to reduce ghosting artifats. May slow the process and increase flickers.
 2. **Number of parallel processes**: multiprocessing to speed up the process. Large value (8) is recommended.
 </details>
 
 ![options](https://github.com/williamyang1991/Rerender_A_Video/assets/18130694/d133e495-01f1-456f-8c41-0ff319721781)
+
 
 
 TODO
