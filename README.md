@@ -111,22 +111,22 @@ We provide abundant advanced options to play with
 <details>
 <summary> <b>Advanced options for the 1st frame translation</b></summary>
 
-1. Resolution related (Frame resolution, left/top/right/bottom crop length): crop the frame and resize its short side to 512.
+1. Resolution related (**Frame resolution**, **left/top/right/bottom crop length**): crop the frame and resize its short side to 512.
 2. ControlNet related:
-   - ControlNet strength: how well the output matches the input control edges
-   - Control type: HED edge or Canny edge
-   - Canny low/high threshold: low values for more edge details
+   - **ControlNet strength**: how well the output matches the input control edges
+   - **Control type**: HED edge or Canny edge
+   - **Canny low/high threshold**: low values for more edge details
 3. SDEdit related:
-   - Denoising strength: repaint degree (low value to make the output look more like the original video)
-   - Preserve color: preserve the color of the original video
+   - **Denoising strength**: repaint degree (low value to make the output look more like the original video)
+   - **Preserve color**: preserve the color of the original video
 4. SD related:
-   - Steps: denoising step
-   - CFG scale: how well the output matches the prompt
-   - Base model: base Stable Diffusion model (SD 1.5)
+   - **Steps**: denoising step
+   - **CFG scale**: how well the output matches the prompt
+   - **Base model**: base Stable Diffusion model (SD 1.5)
       - Stable Diffusion 1.5: official model
       - [revAnimated_v11](https://civitai.com/models/7371/rev-animated?modelVersionId=19575): a semi-realistic (2.5D) model
       - [realisticVisionV20_v20](https://civitai.com/models/4201?modelVersionId=29460): a photo-realistic model
-   - Added prompt/Negative prompt: supplementary prompts
+   - **Added prompt/Negative prompt**: supplementary prompts
 
 </details>
 
