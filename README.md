@@ -135,14 +135,20 @@ We provide abundant advanced options to play with
 
 1. Key frame related
    - **Key frame frequency (K)**: Uniformly sample the key frame every K frames. Small value for large or fast motions.
-   - **Number of key frames (N)**: The final output video will have K*N+1 frames with N+1 key frames.
+   - **Number of key frames (M)**: The final output video will have K*M+1 frames with M+1 key frames.
 2. Temporal consistency related
-   - Cross-frame attention
+   - Cross-frame attention: 
      - **Cross-frame attention start/end**: When applying cross-frame attention for global style consistency
-   - Shape-aware fusion
-     - **Shape-aware fusion start/end**
-   - Pixel-aware fusion
-   - Color-aware AdaIN
+     - **Cross-frame attention update frequency (N)**: Update the reference style frame every N key frames. Should be large for long videos to avoid error accumulation.
+   - **Shape-aware fusion** Check to use this feature 
+     - **Shape-aware fusion start/end**: When applying shape-aware fusion for local shape consistency
+   - **Pixel-aware fusion** Check to use this feature 
+     - **Pixel-aware fusion start/end**: When applying pixel-aware fusion for pixel-level temporal consistency
+     - **Pixel-aware fusion strength**: The strength to preserve the non-inpainting region. Small to avoid error accumulation. Large to avoid burry textures.
+     - **Pixel-aware fusion detail level**: The strength to sharpen the inpainting region. Small to avoid error accumulation. Large to avoid burry textures.
+     - **Smooth fusion boundary**: Check to smooth the inpainting boundary (avoid error accumulation).
+   - **Color-aware AdaIN** Check to use this feature 
+     - **Color-aware AdaIN start/end**: When applying AdaIN to make the video color consistent with the first frame
 
 </details>
 
