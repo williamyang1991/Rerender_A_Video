@@ -15,6 +15,12 @@
     "canny_high": 100,
     "control_strength": 0.7,
     "seed": 0,
-    "warp_step": 0.1,
-    "ada_step": 1.0
+    "warp_period": [
+        0,
+        0.1
+    ],
+    "ada_period": [
+        1,
+        1
+    ]
 }

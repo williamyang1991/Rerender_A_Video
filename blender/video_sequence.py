@@ -17,7 +17,8 @@ class VideoSequence:
                  out_subdir_format='out_%d',
                  blending_out_subdir='blend',
                  output_format='%04d.jpg'):
-        assert (end_frame - beg_frame) % interval == 0
+        if (end_frame - beg_frame) % interval != 0:
+            end_frame -= (end_frame - beg_frame) % interval
 
         self.__base_dir = base_dir
         self.__input_dir = os.path.join(base_dir, input_subdir)
