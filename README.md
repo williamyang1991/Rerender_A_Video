@@ -240,8 +240,8 @@ optional arguments:
   -tmp             Keep temporary output
 ```
 For example, to run Ebsynth on video `man.mp4`,
-1. Put the stylized key frames to `videos/man/keys` for every 10 frames 
-2. Put the original video frames in `videos/man/video` (this can be done with `rerender.py`).
+1. Put the stylized key frames to `videos/man/keys` for every 10 frames (named as `0001.png`, `0011.png`, ...)
+2. Put the original video frames in `videos/man/video` (named as `0001.png`, `0002.png`, ...).
 3. Run Ebsynth on the first 101 frames of the video with poisson gradient blending and save the result to `videos/man/blend.mp4` under FPS 25 with the following command:
 ```shell
 python video_blend.py videos/man \
