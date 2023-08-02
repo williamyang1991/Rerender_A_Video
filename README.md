@@ -173,9 +173,9 @@ Set the arguments in command line. For example,
 python rerender.py --input videos/pexels-antoni-shkraba-8048492-540x960-25fps.mp4 --output result/man/man.mp4 --prompt "a handsome man in van gogh painting"
 ```
 
-The script will run the full pipeline. A work directory will be created in `result/man` and the result video will be output to `result/man/man.mp4`
+The script will run the full pipeline. A work directory will be created at `result/man` and the result video will be output to `result/man/man.mp4`
 
-#### Advanced model
+#### Advanced mode
 
 Set the arguments in config file. For example,
 
@@ -183,14 +183,12 @@ Set the arguments in config file. For example,
 python rerender.py --cfg config/van_gogh_man.json
 ```
 
-The script will run the full pipeline. We provide some examples of config in `config` directory. Most arguments in config is same to arguments in WebUI. Please check the explaination in the previous section.
+The script will run the full pipeline. We provide some examples of config in `config` directory. Most arguments in config is same to arguments in WebUI. Please check the explanations in the previous section.
 
-Different to WebUI, you can set the fine-tuned SD model in config. For example:
+Different to WebUI, you can directly set the fine-tuned SD model in config. For example:
 ```json
 {
-  ...
   "sd_model": "models/realisticVisionV20_v20.safetensors",
-  ...
 }
 ```
 
