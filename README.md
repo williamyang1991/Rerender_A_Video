@@ -26,7 +26,6 @@ https://github.com/williamyang1991/Rerender_A_Video/assets/18130694/7521be69-57c
 - [05/2023] This website is created.
 
 ### TODO
-- [x] ~~Fix the bug of black boundary during propagation.~~
 - [x] Integrate into Diffusers.
 - [x] ~~Add Inference instructions in README.md.~~
 - [x] ~~Add Examples to webUI.~~
@@ -167,25 +166,28 @@ We also provide a flexible script `rerender.py` to run our method.
 
 #### Simple mode
 
-Set the arguments in command line. For example,
+Set the options via command line. For example,
 
 ```shell
 python rerender.py --input videos/pexels-antoni-shkraba-8048492-540x960-25fps.mp4 --output result/man/man.mp4 --prompt "a handsome man in van gogh painting"
 ```
 
-The script will run the full pipeline. A work directory will be created at `result/man` and the result video will be output to `result/man/man.mp4`
+The script will run the full pipeline. A work directory will be created at `result/man` and the result video will be saved as `result/man/man.mp4`
 
 #### Advanced mode
 
-Set the arguments in config file. For example,
+Set the options via a config file. For example,
 
 ```shell
 python rerender.py --cfg config/van_gogh_man.json
 ```
 
-The script will run the full pipeline. We provide some examples of config in `config` directory. Most arguments in config is same to arguments in WebUI. Please check the explanations in the previous section.
+The script will run the full pipeline. 
+We provide some examples of the config in `config` directory. 
+Most options in the config is the same as those in WebUI. 
+Please check the explanations in the WebUI section.
 
-Different to WebUI, you can directly set the fine-tuned SD model in config. For example:
+Specifying customized models by setting `sd_model` in config. For example:
 ```json
 {
   "sd_model": "models/realisticVisionV20_v20.safetensors",
@@ -194,7 +196,7 @@ Different to WebUI, you can directly set the fine-tuned SD model in config. For 
 
 #### Customize the pipeline
 
-Similar to WebUI, we recommend you follow a 3-step workflow: Rerender the first key frame, then rerender the full key frames, finally rerender the full video with propagation. You need to set some extra arguments in command line to customize the pipeline.
+Similar to WebUI, we provide three-step workflow: Rerender the first key frame, then rerender the full key frames, finally rerender the full video with propagation. The pipeline can be customized with the options `-one`, `-nb` and `-nr`.
 
 1. Rerender the first key frame
 ```shell
@@ -209,9 +211,11 @@ python rerender.py --cfg config/van_gogh_man.json -nb
 python rerender.py --cfg config/van_gogh_man.json -nr
 ```
 
-#### Our Ebsynth implement
+#### Our Ebsynth implementation
 
-We provide a separated Ebsynth python script `video_blend.py`. You can run it on your own stylized key frames without using our Rerender algorithm. 
+We provide a separated Ebsynth python script `video_blend.py` with the temporal blending algorithm for interpolating style between key frames introduced in 
+[Stylizing Video by Example](https://dcgi.fel.cvut.cz/home/sykorad/ebsynth.html). 
+It can work on your own stylized key frames independently of our Rerender algorithm. 
 
 Usage:
 ```shell
@@ -235,7 +239,10 @@ optional arguments:
   -ne              Do not run ebsynth (use previous ebsynth output)
   -tmp             Keep temporary output
 ```
-For example, suppose you want to run Ebsynth on video `man.mp4`. You have stored stylized key frames in `videos/man/keys` for every 10 frames and put the frames of input video in `videos/man/video` (you can prepare the input frames with `rerender.py`). You want to run Ebsynth for the first 101 frames of the video and output the video to `videos/man/blend.mp4` with FPS 25. You want to apply poisson gradient blending. Then you can run the following command:
+For example, to run Ebsynth on video `man.mp4`,
+1. Put the stylized key frames to `videos/man/keys` for every 10 frames 
+2. Put the original video frames in `videos/man/video` (this can be done with `rerender.py`).
+3. Run Ebsynth on the first 101 frames of the video with poisson gradient blending and save the result to `videos/man/blend.mp4` with FPS 25 with the following command:
 ```shell
 python video_blend.py videos/man \
   --beg 1 \
