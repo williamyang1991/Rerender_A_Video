@@ -196,7 +196,7 @@ Specifying customized models by setting `sd_model` in config. For example:
 
 #### Customize the pipeline
 
-Similar to WebUI, we provide three-step workflow: Rerender the first key frame, then rerender the full key frames, finally rerender the full video with propagation. The pipeline can be customized with the options `-one`, `-nb` and `-nr`.
+Similar to WebUI, we provide three-step workflow: Rerender the first key frame, then rerender the full key frames, finally rerender the full video with propagation. To run only a single step, specify options `-one`, `-nb` and `-nr`:
 
 1. Rerender the first key frame
 ```shell
@@ -213,8 +213,8 @@ python rerender.py --cfg config/van_gogh_man.json -nr
 
 #### Our Ebsynth implementation
 
-We provide a separated Ebsynth python script `video_blend.py` with the temporal blending algorithm for interpolating style between key frames introduced in 
-[Stylizing Video by Example](https://dcgi.fel.cvut.cz/home/sykorad/ebsynth.html). 
+We provide a separate Ebsynth python script `video_blend.py` with the temporal blending algorithm introduced in 
+[Stylizing Video by Example](https://dcgi.fel.cvut.cz/home/sykorad/ebsynth.html) for interpolating style between key frames. 
 It can work on your own stylized key frames independently of our Rerender algorithm. 
 
 Usage:
