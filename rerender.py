@@ -312,8 +312,9 @@ def rerender(cfg: RerenderConfig, first_img_only: bool, key_video_path: str):
             blend_results_rec_new = model.decode_first_stage(xtrg_)
             tmp = (abs(blend_results_rec_new - blend_results).mean(
                 dim=1, keepdims=True) > 0.25).float()
-            mask_x = F.max_pool2d((F.interpolate(
-                tmp, scale_factor=1 / 8., mode='bilinear') > 0).float(),
+            mask_x = F.max_pool2d((F.interpolate(tmp,
+                                                 scale_factor=1 / 8.,
+                                                 mode='bilinear') > 0).float(),
                                   kernel_size=3,
                                   stride=1,
                                   padding=1)
@@ -410,7 +411,9 @@ if __name__ == '__main__':
     parser.add_argument('--output', type=str, default=None)
     parser.add_argument('--prompt', type=str, default=None)
     parser.add_argument('--key_video_path', type=str, default=None)
-    parser.add_argument('-one', action='store_true')
+    parser.add_argument('-one',
+                        action='store_true',
+                        help='Run the first frame with ControlNet only')
     parser.add_argument('-nr',
                         action='store_true',
                         help='Do not run rerender and do postprocessing only')

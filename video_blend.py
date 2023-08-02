@@ -274,7 +274,7 @@ def main(args):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('name', type=str, help='Name to video')
+    parser.add_argument('name', type=str, help='Path to input video')
     parser.add_argument('--output',
                         type=str,
                         default=None,

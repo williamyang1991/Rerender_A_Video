@@ -26,9 +26,9 @@ https://github.com/williamyang1991/Rerender_A_Video/assets/18130694/7521be69-57c
 - [05/2023] This website is created.
 
 ### TODO
-- [x] Fix the bug of black boundary during propagation.
+- [x] ~~Fix the bug of black boundary during propagation.~~
 - [x] Integrate into Diffusers.
-- [x] Add Inference instructions in README.md.
+- [x] ~~Add Inference instructions in README.md.~~
 - [x] ~~Add Examples to webUI.~~
 - [x] ~~Add optional poisson fusion to the pipeline.~~
 - [x] ~~Add Installation instructions for Windows~~
@@ -161,14 +161,93 @@ We provide abundant advanced options to play with
 
 ![options](https://github.com/williamyang1991/Rerender_A_Video/assets/18130694/d133e495-01f1-456f-8c41-0ff319721781)
 
+### Command Line
 
-TODO FOR COMMAND LINE
+We also provide a flexible script `rerender.py` to run our method.
+
+#### Simple mode
+
+Set the arguments in command line. For example,
+
+```shell
+python rerender.py --input videos/pexels-antoni-shkraba-8048492-540x960-25fps.mp4 --output result/man/man.mp4 --prompt "a handsome man in van gogh painting"
+```
+
+The script will run the full pipeline. A work directory will be created in `result/man` and the result video will be output to `result/man/man.mp4`
+
+#### Advanced model
+
+Set the arguments in config file. For example,
+
+```shell
+python rerender.py --cfg config/van_gogh_man.json
+```
+
+The script will run the full pipeline. We provide some examples of config in `config` directory. Most arguments in config is same to arguments in WebUI. Please check the explaination in the previous section.
+
+Different to WebUI, you can set the fine-tuned SD model in config. For example:
+```json
+{
+  ...
+  "sd_model": "models/realisticVisionV20_v20.safetensors",
+  ...
+}
+```
+
+#### Customize the pipeline
+
+Similar to WebUI, we recommend you follow a 3-step workflow: Rerender the first key frame, then rerender the full key frames, finally rerender the full video with propagation. You need to set some extra arguments in command line to customize the pipeline.
+
 1. Rerender the first key frame
+```shell
+python rerender.py --cfg config/van_gogh_man.json -one -nb
+```
 2. Rerender the full key frames
+```shell
+python rerender.py --cfg config/van_gogh_man.json -nb
+```
 3. Rerender the full video with propagation
-4. Use your own customized model
-5. Tips
+```shell
+python rerender.py --cfg config/van_gogh_man.json -nr
+```
 
+#### Our Ebsynth implement
+
+We provide a separated Ebsynth python script `video_blend.py`. You can run it on your own stylized key frames without using our Rerender algorithm. 
+
+Usage:
+```shell
+video_blend.py [-h] [--output OUTPUT] [--fps FPS] [--beg BEG] [--end END] [--itv ITV] [--key KEY]
+                      [--n_proc N_PROC] [-ps] [-ne] [-tmp]
+                      name
+
+positional arguments:
+  name             Path to input video
+
+optional arguments:
+  -h, --help       show this help message and exit
+  --output OUTPUT  Path to output video
+  --fps FPS        The FPS of output video
+  --beg BEG        The index of the first frame to be stylized
+  --end END        The index of the last frame to be stylized
+  --itv ITV        The interval of key frame
+  --key KEY        The subfolder name of stylized key frames
+  --n_proc N_PROC  The max process count
+  -ps              Use poisson gradient blending
+  -ne              Do not run ebsynth (use previous ebsynth output)
+  -tmp             Keep temporary output
+```
+For example, suppose you want to run Ebsynth on video `man.mp4`. You have stored stylized key frames in `videos/man/keys` for every 10 frames and put the frames of input video in `videos/man/video` (you can prepare the input frames with `rerender.py`). You want to run Ebsynth for the first 101 frames of the video and output the video to `videos/man/blend.mp4` with FPS 25. You want to apply poisson gradient blending. Then you can run the following command:
+```shell
+python video_blend.py videos/man \
+  --beg 1 \
+  --end 101 \
+  --itv 10 \
+  --key keys \
+  --output videos/man/blend.mp4 \
+  --fps 25.0 \
+  -ps
+```
 
 ## (2) Results
 
