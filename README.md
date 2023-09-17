@@ -1,6 +1,6 @@
 # Rerender A Video - Official PyTorch Implementation
 
-![Untitled](https://github.com/williamyang1991/Rerender_A_Video/assets/18130694/13b8538b-d321-477f-9887-b79e04982da6)
+![teaser](https://github.com/williamyang1991/Rerender_A_Video/assets/18130694/aa7dc164-dab7-43f4-a46b-758b34911f16)
 
 <!--https://github.com/williamyang1991/Rerender_A_Video/assets/18130694/82c35efb-e86b-4376-bfbe-6b69159b8879-->
 
@@ -19,7 +19,7 @@ in SIGGRAPH Asia 2023 Conference Proceedings <br>
 - **Zero-shot**: no training or fine-tuning required.
 - **Flexibility**: compatible with off-the-shelf models (e.g., [ControlNet](https://github.com/lllyasviel/ControlNet), [LoRA](https://civitai.com/)) for customized translation.
 
-https://github.com/williamyang1991/Rerender_A_Video/assets/18130694/7521be69-57c0-499b-859b-86368c14612d
+https://github.com/williamyang1991/Rerender_A_Video/assets/18130694/811fdea3-f0da-49c9-92b8-2d2ad360f0d6
 
 ## Updates
 
@@ -93,7 +93,8 @@ Upload your video, input the prompt, select the seed, and hit:
 - **Run Propogation**: propogate the key frames to other frames for full video translation
 - **Run All**: **Run 1st Key Frame**, **Run Key Frames** and **Run Propogation**
 
-![UI](https://github.com/williamyang1991/Rerender_A_Video/assets/18130694/d4d9160d-0990-4397-bf3d-07edcf56a738)
+![UI](https://github.com/williamyang1991/Rerender_A_Video/assets/18130694/eb4e1ddc-11a3-42dd-baa4-622eecef04c7)
+
 
 We provide abundant advanced options to play with
 
@@ -161,7 +162,8 @@ We provide abundant advanced options to play with
 2. **Number of parallel processes**: multiprocessing to speed up the process. Large value (8) is recommended.
 </details>
 
-![options](https://github.com/williamyang1991/Rerender_A_Video/assets/18130694/d133e495-01f1-456f-8c41-0ff319721781)
+![options](https://github.com/williamyang1991/Rerender_A_Video/assets/18130694/ffebac15-e7e0-4cd4-a8fe-60f243450172)
+
 
 ### Command Line
 
