@@ -24,7 +24,7 @@ https://github.com/williamyang1991/Rerender_A_Video/assets/18130694/811fdea3-f0d
 ## Updates
 
 - [09/2023] Code is released.
-- [09/2023] A ccepted to SIGGRAPH Asia 2023 Conference Proceedings!
+- [09/2023] Accepted to SIGGRAPH Asia 2023 Conference Proceedings!
 - [06/2023] Integrated to 🤗 [Hugging Face](https://huggingface.co/spaces/Anonymous-sub/Rerender). Enjoy the web demo!
 - [05/2023] This website is created.
 
