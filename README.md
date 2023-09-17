@@ -297,13 +297,18 @@ python video_blend.py videos/man \
 
 Text-guided virtual character generation.
 
-https://github.com/williamyang1991/Rerender_A_Video/assets/18130694/f0e39ed5-080d-4aec-9a6b-fe81b37b29fe
 
-https://github.com/williamyang1991/Rerender_A_Video/assets/18130694/13741837-b065-476b-84fb-772b159f456a
+https://github.com/williamyang1991/Rerender_A_Video/assets/18130694/1405b257-e59a-427f-890d-7652e6bed0a4
+
+
+https://github.com/williamyang1991/Rerender_A_Video/assets/18130694/efee8cc6-9708-4124-bf6a-49baf91349fc
+
 
 Video stylization and video editing.
 
-https://github.com/williamyang1991/Rerender_A_Video/assets/18130694/79503b36-cf61-4e64-b57e-540494d6dd88
+
+https://github.com/williamyang1991/Rerender_A_Video/assets/18130694/1b72585c-99c0-401d-b240-5b8016df7a3f
+
 
 
 ## Citation
