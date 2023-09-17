@@ -263,12 +263,13 @@ python video_blend.py videos/man \
 
 ### Key frame translation
 
+
 <table class="center">
 <tr>
-  <td><img src="https://github.com/williamyang1991/Rerender_A_Video/assets/18130694/cc6db004-8366-4dde-bac0-a2ebd2d23d61" raw=true></td>
-  <td><img src="https://github.com/williamyang1991/Rerender_A_Video/assets/18130694/1dd74c11-a9c1-4ea9-ba60-45150e5ed3ca" raw=true></td>
-  <td><img src="https://github.com/williamyang1991/Rerender_A_Video/assets/18130694/542dbc93-e5df-4347-964d-a11c1ae7c9ed" raw=true></td>
-  <td><img src="https://github.com/williamyang1991/Rerender_A_Video/assets/18130694/58c0afcd-9bcd-4564-9aa5-202502b35f60" raw=true></td>
+  <td><img src="https://github.com/williamyang1991/Rerender_A_Video/assets/18130694/18666871-f273-44b2-ae67-7be85d43e2f6" raw=true></td>
+  <td><img src="https://github.com/williamyang1991/Rerender_A_Video/assets/18130694/61f59540-f06e-4e5a-86b6-1d7cb8ed6300" raw=true></td>
+  <td><img src="https://github.com/williamyang1991/Rerender_A_Video/assets/18130694/8e8ad51a-6a71-4b34-8633-382192d0f17c" raw=true></td>
+  <td><img src="https://github.com/williamyang1991/Rerender_A_Video/assets/18130694/b03cd35f-5d90-471a-9aa9-5c7773d7ac39" raw=true></td>
 </tr>
 <tr>
   <td width=27.5% align="center">white ancient Greek sculpture, Venus de Milo, light pink and blue background</td>
@@ -280,10 +281,10 @@ python video_blend.py videos/man \
 
 <table class="center">
 <tr>
-  <td><img src="https://github.com/williamyang1991/Rerender_A_Video/assets/18130694/ea3d919b-01d8-40f6-b708-48d33beda854" raw=true></td>
-  <td><img src="https://github.com/williamyang1991/Rerender_A_Video/assets/18130694/932aa462-93a6-44cb-8598-127b1184b53a" raw=true></td>
-  <td><img src="https://github.com/williamyang1991/Rerender_A_Video/assets/18130694/2fe6ec77-bb68-4d4c-954d-9a2f51a9b975" raw=true></td>
-  <td><img src="https://github.com/williamyang1991/Rerender_A_Video/assets/18130694/fde7ff9d-7d96-4b22-b5b2-307c6ea2ccc3" raw=true></td>
+  <td><img src="https://github.com/williamyang1991/Rerender_A_Video/assets/18130694/649a789e-0c41-41cf-94a4-0d524dcfb282" raw=true></td>
+  <td><img src="https://github.com/williamyang1991/Rerender_A_Video/assets/18130694/73590c16-916f-4ee6-881a-44a201dd85dd" raw=true></td>
+  <td><img src="https://github.com/williamyang1991/Rerender_A_Video/assets/18130694/fbdc0b8e-6046-414f-a37e-3cd9dd0adf5d" raw=true></td>
+  <td><img src="https://github.com/williamyang1991/Rerender_A_Video/assets/18130694/eb11d807-2afa-4609-a074-34300b67e6aa" raw=true></td>
 </tr>
 <tr>
   <td width=26.0% align="center">a swan in chinese ink wash painting, monochrome</td>
