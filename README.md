@@ -85,7 +85,7 @@ python rerender.py --cfg config/real2sculpture.json
 ```
 python webUI.py
 ```
-The Gradio app also allows you to flexibly change the inference options. Just try it for more details.
+The Gradio app also allows you to flexibly change the inference options. Just try it for more details. (For WebUI, you need to download [revAnimated_v11](https://civitai.com/models/7371/rev-animated?modelVersionId=19575) and [realisticVisionV20_v20](https://civitai.com/models/4201?modelVersionId=29460) to `./models/` after Installation)
 
 Upload your video, input the prompt, select the seed, and hit:
 - **Run 1st Key Frame**: only translate the first frame, so you can adjust the prompts/models/parameters to find your ideal output appearance before running the whole video.
