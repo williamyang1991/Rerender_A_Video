@@ -37,6 +37,8 @@ https://github.com/williamyang1991/Rerender_A_Video/assets/18130694/811fdea3-f0d
 
 ## Installation
 
+*Please make sure your installation path does not contain non-English letters or spaces.*
+
 1. Clone the repository.
 
 ```shell
