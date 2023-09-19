@@ -78,6 +78,7 @@ python rerender.py --cfg config/real2sculpture.json
 1. Install [CUDA](https://developer.nvidia.com/cuda-toolkit-archive)
 2. Install [git](https://git-scm.com/download/win)
 3. Install [VS](https://visualstudio.microsoft.com/) with Windows 10/11 SDK (for building deps/ebsynth/bin/ebsynth.exe)
+4. In case building ebsynth fails, we provides our complied [ebsynth](https://drive.google.com/drive/folders/1oSB3imKwZGz69q2unBUfcgmQpzwccoyD?usp=sharing)
 </details>
 
 ## (1) Inference
