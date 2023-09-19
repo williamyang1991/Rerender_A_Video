@@ -39,7 +39,7 @@ https://github.com/williamyang1991/Rerender_A_Video/assets/18130694/811fdea3-f0d
 
 *Please make sure your installation path only contain English letters or _*
 
-1. Clone the repository.
+1. Clone the repository. (Don't forget --recursive. Otherwise, please run `git submodule update --init --recursive`)
 
 ```shell
 git clone git@github.com:williamyang1991/Rerender_A_Video.git --recursive
