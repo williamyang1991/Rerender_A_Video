@@ -84,7 +84,7 @@ python rerender.py --cfg config/real2sculpture.json
 <summary>Installation Fails?</summary>
 
 1. In case building ebsynth fails, we provides our complied [ebsynth](https://drive.google.com/drive/folders/1oSB3imKwZGz69q2unBUfcgmQpzwccoyD?usp=sharing)
-2. `KeyError: 'dataset'`: upgrade Graido to the latest version (https://github.com/williamyang1991/Rerender_A_Video/issues/14#issuecomment-1722778672)
+2. `KeyError: 'dataset'`: upgrade Gradio to the latest version (https://github.com/williamyang1991/Rerender_A_Video/issues/14#issuecomment-1722778672)
 
 </details>
 
@@ -101,8 +101,8 @@ The Gradio app also allows you to flexibly change the inference options. Just tr
 Upload your video, input the prompt, select the seed, and hit:
 - **Run 1st Key Frame**: only translate the first frame, so you can adjust the prompts/models/parameters to find your ideal output appearance before running the whole video.
 - **Run Key Frames**: translate all the key frames based on the settings of the first frame, so you can adjust the temporal-related parameters for better temporal consistency before running the whole video.
-- **Run Propogation**: propogate the key frames to other frames for full video translation
-- **Run All**: **Run 1st Key Frame**, **Run Key Frames** and **Run Propogation**
+- **Run Propagation**: propagate the key frames to other frames for full video translation
+- **Run All**: **Run 1st Key Frame**, **Run Key Frames** and **Run Propagation**
 
 ![UI](https://github.com/williamyang1991/Rerender_A_Video/assets/18130694/eb4e1ddc-11a3-42dd-baa4-622eecef04c7)
 
@@ -169,7 +169,7 @@ We provide abundant advanced options to play with
 <details>
 <summary> <b>Advanced options for the full video translation</b></summary>
   
-1. **Gradient blending**: apply Poisson Blending to reduce ghosting artifats. May slow the process and increase flickers.
+1. **Gradient blending**: apply Poisson Blending to reduce ghosting artifacts. May slow the process and increase flickers.
 2. **Number of parallel processes**: multiprocessing to speed up the process. Large value (8) is recommended.
 </details>
 
