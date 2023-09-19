@@ -78,8 +78,16 @@ python rerender.py --cfg config/real2sculpture.json
 1. Install [CUDA](https://developer.nvidia.com/cuda-toolkit-archive)
 2. Install [git](https://git-scm.com/download/win)
 3. Install [VS](https://visualstudio.microsoft.com/) with Windows 10/11 SDK (for building deps/ebsynth/bin/ebsynth.exe)
-4. In case building ebsynth fails, we provides our complied [ebsynth](https://drive.google.com/drive/folders/1oSB3imKwZGz69q2unBUfcgmQpzwccoyD?usp=sharing)
 </details>
+
+<details>
+<summary>Installation Fails?</summary>
+
+1. In case building ebsynth fails, we provides our complied [ebsynth](https://drive.google.com/drive/folders/1oSB3imKwZGz69q2unBUfcgmQpzwccoyD?usp=sharing)
+2. `KeyError: 'dataset'`: upgrade Graido to the latest version (https://github.com/williamyang1991/Rerender_A_Video/issues/14#issuecomment-1722778672)
+
+</details>
+
 
 ## (1) Inference
 
