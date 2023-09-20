@@ -87,7 +87,8 @@ python rerender.py --cfg config/real2sculpture.json
 2. `KeyError: 'dataset'`: upgrade Gradio to the latest version (https://github.com/williamyang1991/Rerender_A_Video/issues/14#issuecomment-1722778672)
 3. Error when processing videos: manually install ffmpeg (https://github.com/williamyang1991/Rerender_A_Video/issues/19#issuecomment-1723685825, https://github.com/williamyang1991/Rerender_A_Video/issues/29#issuecomment-1726091112)
 4. `ERR_ADDRESS_INVALID` Cannot open the webUI in browser: replace 0.0.0.0 with 127.0.0.1 in webUI.py (https://github.com/williamyang1991/Rerender_A_Video/issues/19#issuecomment-1723685825)
-
+5. `CUDA out of memory`: (https://github.com/williamyang1991/Rerender_A_Video/pull/23#issue-1900789461)
+ 
 </details>
 
 
