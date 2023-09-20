@@ -1,9 +1,9 @@
 [submodule "deps/gmflow"]
 	path = deps/gmflow
-	url = git@github.com:haofeixu/gmflow.git
+	url = https://github.com/haofeixu/gmflow.git
 [submodule "deps/ControlNet"]
 	path = deps/ControlNet
-	url = git@github.com:lllyasviel/ControlNet.git
+	url = https://github.com/lllyasviel/ControlNet.git
 [submodule "deps/ebsynth"]
 	path = deps/ebsynth
-	url = git@github.com:SingleZombie/ebsynth.git
+	url = https://github.com/SingleZombie/ebsynth.git
