@@ -58,6 +58,7 @@ You can also create a new conda environment from scratch.
 conda env create -f environment.yml
 conda activate rerender
 ```
+24GB VRAM is required. Please refer to https://github.com/williamyang1991/Rerender_A_Video/pull/23#issue-1900789461 to reduce memory consumption.
 
 3. Run the installation script. The required models will be downloaded in `./models`.
 
@@ -89,6 +90,7 @@ python rerender.py --cfg config/real2sculpture.json
 4. Error when processing videos: manually install ffmpeg (https://github.com/williamyang1991/Rerender_A_Video/issues/19#issuecomment-1723685825, https://github.com/williamyang1991/Rerender_A_Video/issues/29#issuecomment-1726091112)
 5. `ERR_ADDRESS_INVALID` Cannot open the webUI in browser: replace 0.0.0.0 with 127.0.0.1 in webUI.py (https://github.com/williamyang1991/Rerender_A_Video/issues/19#issuecomment-1723685825)
 6. `CUDA out of memory`: (https://github.com/williamyang1991/Rerender_A_Video/pull/23#issue-1900789461)
+7. `AttributeError: module 'keras.backend' has no attribute 'is_tensor'`: update einops (https://github.com/williamyang1991/Rerender_A_Video/issues/26#issuecomment-1726682446)
  
 </details>
 
