@@ -701,10 +701,10 @@ with block:
                                                value=200,
                                                step=1)
                 ddim_steps = gr.Slider(label='Steps',
-                                       minimum=1,
+                                       minimum=20,
                                        maximum=100,
                                        value=20,
-                                       step=1)
+                                       step=20)
                 scale = gr.Slider(label='CFG scale',
                                   minimum=0.1,
                                   maximum=30.0,
