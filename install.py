@@ -74,5 +74,5 @@ def download_vae():
 build_ebsynth()
 download_gmflow_ckpt()
 download_controlnet_canny()
-# download_controlnet_hed()
+download_controlnet_hed()
 download_vae()
