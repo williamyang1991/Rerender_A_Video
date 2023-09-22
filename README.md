@@ -123,6 +123,7 @@ We provide abundant advanced options to play with
 
 - Using LoRA/Dreambooth/Finetuned/Mixed SD models
   - Modify `sd_model_cfg.py` to add paths to the saved SD models
+  - How to use LoRA: https://github.com/williamyang1991/Rerender_A_Video/issues/39#issuecomment-1730678296
 - Using other controls from ControlNet (e.g., Depth, Pose)
   - Add more options like `control_type = gr.Dropdown(['HED', 'canny', 'depth']` here https://github.com/williamyang1991/Rerender_A_Video/blob/b6cafb5d80a79a3ef831c689ffad92ec095f2794/webUI.py#L690
   - Add model loading options like `elif control_type == 'depth':` following https://github.com/williamyang1991/Rerender_A_Video/blob/b6cafb5d80a79a3ef831c689ffad92ec095f2794/webUI.py#L88
