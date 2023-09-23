@@ -1,0 +1,34 @@
+# Example docker-compose for Rerender A Video
+services:
+  render:
+    container_name: render
+    hostname: render
+    build:
+      context: . # https://github.com/williamyang1991/Rerender_A_Video#main
+      shm_size: "6gb" # optional
+      args:
+        - TAG=render:latest
+    environment:
+      USER_ID: 1001 # optional
+      NVIDIA_VISIBLE_DEVICES: all
+      NVIDIA_DRIVER_CAPABILITIES: all
+      # CLI_ARGS: webUI.py # optional
+    image:  render:latest
+    shm_size: "24gb" # optional
+    volumes:
+      - /mnt/yourhost/render/models:/app/models:rw
+      - /mnt/yourhost/render/output/results:/app/result:rw
+      - /mnt/yourhost/render/usercache:/home/app/.cache:rw
+    ports:
+      - "7860:7860"
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true # optional
+    runtime: nvidia
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: ["compute", "utility", "graphics"]
