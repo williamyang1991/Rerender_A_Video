@@ -397,10 +397,14 @@ def process2(*args):
     pre_result = first_result
     pre_img = first_img
 
-    for i in range(0, cfg.frame_count - 1, cfg.interval):
+    for i in range(0, len(imgs) - 1, cfg.interval):
         cid = i + 1
-        frame = cv2.imread(imgs[i + 1])
         print(cid)
+        print(len(imgs))
+        if cid <= (len(imgs) - 1):
+            frame = cv2.imread(imgs[i + 1])
+        else:
+            frame = cv2.imread(len(imgs) - 1)
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         img = HWC3(frame)
         H, W, C = img.shape
