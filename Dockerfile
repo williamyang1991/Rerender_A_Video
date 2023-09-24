@@ -9,7 +9,8 @@ ENV USER_ID="${USER_ID:-1001}"
 
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked,rw \
   apt-get update && \
-  apt-get install --no-install-recommends -y git vim build-essential python3-dev python3-venv cuda-nvcc-12-2 libglib2.0-0 libgl1-mesa-glx && \
+  apt-get install --no-install-recommends -y git vim build-essential python3-dev python3-venv \
+  cuda-nvcc-12-2 libglib2.0-0 libgl1-mesa-glx ffmpeg && \
   rm -rf /var/lib/apt/lists/*
 
 # add user and drop root privileges
