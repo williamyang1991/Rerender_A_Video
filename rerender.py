@@ -213,10 +213,13 @@ def rerender(cfg: RerenderConfig, first_img_only: bool, key_video_path: str):
     if first_img_only:
         exit(0)
 
-    for i in range(0, cfg.frame_count - 1, cfg.interval):
+    for i in range(0, min(len(imgs), cfg.frame_count) - 1, cfg.interval):
         cid = i + 1
-        frame = cv2.imread(imgs[i + 1])
         print(cid)
+        if cid <= (len(imgs) - 1):
+            frame = cv2.imread(cid)
+        else:
+            frame = cv2.imread(len(imgs) - 1)
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         img = HWC3(frame)
 
