@@ -401,7 +401,7 @@ def process2(*args):
         cid = i + 1
         print(cid)
         if cid <= (len(imgs) - 1):
-            frame = cv2.imread(imgs[cid])
+            frame = cv2.imread(cid)
         else:
             frame = cv2.imread(len(imgs) - 1)
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
