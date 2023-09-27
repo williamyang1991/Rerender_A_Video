@@ -173,6 +173,8 @@ def process_seq(video_sequence: VideoSequence,
                 blend_gradient=True):
 
     key1_img = cv2.imread(video_sequence.get_key_img(i))
+    if key1_img is None:
+        return
     img_shape = key1_img.shape
     interval = video_sequence.interval
     beg_id = video_sequence.get_sequence_beg_id(i)
@@ -195,8 +197,10 @@ def process_seq(video_sequence: VideoSequence,
     for i in range(interval - 1):
         bin_a = binas[i + 1]
         bin_b = binbs[i + 1]
-        dist1s.append(load_error(bin_a, img_shape))
-        dist2s.append(load_error(bin_b, img_shape))
+        if os.path.exists(bin_a):
+            dist1s.append(load_error(bin_a, img_shape))
+        if os.path.exists(bin_b):
+            dist2s.append(load_error(bin_b, img_shape))
 
     lb = 0
     ub = 1
@@ -210,7 +214,8 @@ def process_seq(video_sequence: VideoSequence,
     for i in range(interval - 1):
         c_id = beg_id + i + 1
         blend_out_path = video_sequence.get_blending_img(c_id)
-
+        if i > (len(dist1s) -1) or i > (len(dist2s) -1):
+            continue
         dist1 = dist1s[i]
         dist2 = dist2s[i]
         oa = oas[i + 1]
