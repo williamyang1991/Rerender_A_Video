@@ -22,7 +22,7 @@ def calc_mean_std(feat, eps=1e-5):
 class AttentionControl():
 
     def __init__(self, inner_strength, mask_period, cross_period, ada_period,
-                 warp_period):
+                 warp_period, loose_cfatnn=True):
         self.step_store = self.get_empty_store()
         self.cur_step = 0
         self.total_step = 0
@@ -39,6 +39,7 @@ class AttentionControl():
         self.mask_period = mask_period
         self.ada_period = ada_period
         self.warp_period = warp_period
+        self.up_resolution = 1280 if loose_cfatnn else 1281
 
     @staticmethod
     def get_empty_store():
@@ -52,7 +53,7 @@ class AttentionControl():
     def forward(self, context, is_cross: bool, place_in_unet: str):
         cross_period = (self.total_step * self.cross_period[0],
                         self.total_step * self.cross_period[1])
-        if not is_cross and place_in_unet == 'up':
+        if not is_cross and place_in_unet == 'up' and context.shape[2] < self.up_resolution:
             if self.init_store:
                 self.step_store['first'].append(context.detach())
                 self.step_store['previous'].append(context.detach())
