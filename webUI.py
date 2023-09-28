@@ -29,6 +29,7 @@ from src.ddim_v_hacked import DDIMVSampler
 from src.img_util import find_flat_region, numpy2tensor
 from src.video_util import (frame_to_video, get_fps, get_frame_count,
                             prepare_frames)
+from src.freeu import freeu_forward
 
 inversed_model_dict = dict()
 for k, v in model_dict.items():
@@ -106,7 +107,8 @@ class GlobalState:
         except Exception:
             print('Warning: We suggest you download the fine-tuned VAE',
                   'otherwise the generation quality will be degraded')
-
+        
+        model.model.diffusion_model.forward = freeu_forward(model.model.diffusion_model, 1., 1., 1., 1.)
         self.ddim_v_sampler = DDIMVSampler(model)
 
     def clear_sd_model(self):
@@ -724,6 +726,29 @@ with block:
                     value=('longbody, lowres, bad anatomy, bad hands, '
                            'missing fingers, extra digit, fewer digits, '
                            'cropped, worst quality, low quality'))
+                with gr.Row():
+                    b1 = gr.Slider(label='FreeU first-stage backbone factor',
+                                          minimum=1,
+                                          maximum=1.6,
+                                          value=1,
+                                          step=0.01,
+                                  info='FreeU to enhance texture and color')
+                    b2 = gr.Slider(label='FreeU second-stage backbone factor',
+                                           minimum=1,
+                                           maximum=1.6,
+                                           value=1,
+                                           step=0.01)
+                with gr.Row():
+                    s1 = gr.Slider(label='FreeU first-stage skip factor',
+                                         minimum=0,
+                                         maximum=1,
+                                         value=1,
+                                         step=0.01)
+                    s2 = gr.Slider(label='FreeU second-stage skip factor',
+                                            minimum=0,
+                                            maximum=1,
+                                            value=1,
+                                            step=0.01)                               
             with gr.Accordion('Advanced options for the key fame translation',
                               open=False):
                 interval = gr.Slider(
@@ -927,4 +952,4 @@ with block:
     run_button2.click(fn=process2, inputs=ips, outputs=[result_keyframe])
     run_button3.click(fn=process3, inputs=ips_process3, outputs=[result_video])
 
-block.launch(server_name='0.0.0.0')
+block.launch(server_name='0.0.0.0', share=True)
