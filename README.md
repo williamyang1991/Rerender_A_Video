@@ -29,6 +29,7 @@ https://github.com/williamyang1991/Rerender_A_Video/assets/18130694/811fdea3-f0d
 - [05/2023] This website is created.
 
 ### TODO
+- [x] Integrate [FreeU](https://github.com/ChenyangSi/FreeU) into Rerender
 - [x] Integrate into Diffusers.
 - [x] ~~Add Inference instructions in README.md.~~
 - [x] ~~Add Examples to webUI.~~
