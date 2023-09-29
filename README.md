@@ -153,6 +153,9 @@ We provide abundant advanced options to play with
      - [revAnimated_v11](https://civitai.com/models/7371/rev-animated?modelVersionId=19575): a semi-realistic (2.5D) model
      - [realisticVisionV20_v20](https://civitai.com/models/4201?modelVersionId=29460): a photo-realistic model
    - **Added prompt/Negative prompt**: supplementary prompts
+5. FreeU related:
+   - **FreeU first/second-stage backbone factor**: =1 do nothing; >1 enhance output color and details
+   - **FreeU first/second-stage skip factor**: =1 do nothing; <1 enhance output color and details
 
 </details id="option2">
 
@@ -166,6 +169,7 @@ We provide abundant advanced options to play with
    - Cross-frame attention: 
      - **Cross-frame attention start/end**: When applying cross-frame attention for global style consistency
      - **Cross-frame attention update frequency (N)**: Update the reference style frame every N key frames. Should be large for long videos to avoid error accumulation.
+     - **Loose Cross-frame attention**: Using cross-frame attention in fewer layers to better match the input video (for video with large motions)
    - **Shape-aware fusion** Check to use this feature 
      - **Shape-aware fusion start/end**: When applying shape-aware fusion for local shape consistency
    - **Pixel-aware fusion** Check to use this feature 
@@ -341,7 +345,7 @@ Compared to the conference version, we are keeping adding new features.
 
 #### Loose cross-frame attention
 By using cross-frame attention in less layers, our results will better match the input video, thus reducing ghosting artifacts caused by inconsistencies.
-This feature can be activated by setting `loose_cfattn` in config file. See `config/real2sculpture_loose_cfattn.json`.
+This feature can be activated by setting `loose_cfattn` in config file. This feature can be used by checking `Loose Cross-frame attention` in the <a href="#option2">Advanced options for the key frame translation</a> for WebUI or setting `loose_cfattn` for script (see `config/real2sculpture_loose_cfattn.json`).
 
 #### FreeU
 [FreeU](https://github.com/ChenyangSi/FreeU) is a method that improves diffusion model sample quality at no costs. We find featured with FreeU, our results will have higher contrast and saturation, richer details, and more vivid colors. This feature can be used by setting FreeU backbone factors and skip factors in the <a href="#option1">Advanced options for the 1st frame translation</a> for WebUI or setting `freeu_args` for script (see `config/real2sculpture_freeu.json`).
