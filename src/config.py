@@ -38,6 +38,8 @@ class RerenderConfig:
                                inner_strength: float = 0.9,
                                smooth_boundary: bool = True,
                                color_preserve: bool = True,
+                               loose_cfattn: bool = False,
+                               freeu_args: Tuple[int] = (1, 1, 1, 1),
                                **kwargs):
         self.input_path = input_path
         self.output_path = output_path
@@ -83,6 +85,8 @@ class RerenderConfig:
         self.inner_strength = inner_strength
         self.smooth_boundary = smooth_boundary
         self.color_preserve = color_preserve
+        self.loose_cfattn = loose_cfattn
+        self.freeu_args = freeu_args
 
         os.makedirs(self.input_dir, exist_ok=True)
         os.makedirs(self.work_dir, exist_ok=True)
@@ -129,6 +133,8 @@ class RerenderConfig:
         append_if_not_none('inner_strength')
         append_if_not_none('smooth_boundary')
         append_if_not_none('color_perserve')
+        append_if_not_none('loose_cfattn')
+        append_if_not_none('freeu_args')
         self.create_from_parameters(**kwargs)
 
     @property

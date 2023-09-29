@@ -27,6 +27,7 @@ from src.controller import AttentionControl
 from src.ddim_v_hacked import DDIMVSampler
 from src.img_util import find_flat_region, numpy2tensor
 from src.video_util import frame_to_video, get_fps, prepare_frames
+from src.freeu import freeu_forward
 
 blur = T.GaussianBlur(kernel_size=(9, 9), sigma=(18, 18))
 totensor = T.PILToTensor()
@@ -98,7 +99,9 @@ def rerender(cfg: RerenderConfig, first_img_only: bool, key_video_path: str):
     except Exception:
         print('Warning: We suggest you download the fine-tuned VAE',
               'otherwise the generation quality will be degraded')
-
+    
+    model.model.diffusion_model.forward = \
+        freeu_forward(model.model.diffusion_model, *cfg.freeu_args)
     ddim_v_sampler = DDIMVSampler(model)
 
     flow_model = GMFlow(
@@ -140,7 +143,7 @@ def rerender(cfg: RerenderConfig, first_img_only: bool, key_video_path: str):
     firstx0 = True
     controller = AttentionControl(cfg.inner_strength, cfg.mask_period,
                                   cfg.cross_period, cfg.ada_period,
-                                  cfg.warp_period)
+                                  cfg.warp_period, cfg.loose_cfattn)
 
     imgs = sorted(os.listdir(cfg.input_dir))
     imgs = [os.path.join(cfg.input_dir, img) for img in imgs]

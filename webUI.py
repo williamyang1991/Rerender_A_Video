@@ -29,6 +29,7 @@ from src.ddim_v_hacked import DDIMVSampler
 from src.img_util import find_flat_region, numpy2tensor
 from src.video_util import (frame_to_video, get_fps, get_frame_count,
                             prepare_frames)
+from src.freeu import freeu_forward
 
 inversed_model_dict = dict()
 for k, v in model_dict.items():
@@ -71,12 +72,12 @@ class GlobalState:
         self.flow_model = flow_model
 
     def update_controller(self, inner_strength, mask_period, cross_period,
-                          ada_period, warp_period):
+                          ada_period, warp_period, loose_cfattn):
         self.controller = AttentionControl(inner_strength, mask_period,
                                            cross_period, ada_period,
-                                           warp_period)
+                                           warp_period, loose_cfatnn=loose_cfattn)
 
-    def update_sd_model(self, sd_model, control_type):
+    def update_sd_model(self, sd_model, control_type, freeu_args):
         if sd_model == self.sd_model:
             return
         self.sd_model = sd_model
@@ -106,7 +107,8 @@ class GlobalState:
         except Exception:
             print('Warning: We suggest you download the fine-tuned VAE',
                   'otherwise the generation quality will be degraded')
-
+        
+        model.model.diffusion_model.forward = freeu_forward(model.model.diffusion_model, *freeu_args)
         self.ddim_v_sampler = DDIMVSampler(model)
 
     def clear_sd_model(self):
@@ -142,7 +144,7 @@ def create_cfg(input_path, prompt, image_resolution, control_strength,
                x0_strength, use_constraints, cross_start, cross_end,
                style_update_freq, warp_start, warp_end, mask_start, mask_end,
                ada_start, ada_end, mask_strength, inner_strength,
-               smooth_boundary):
+               smooth_boundary, loose_cfattn, b1, b2, s1, s2):
     use_warp = 'shape-aware fusion' in use_constraints
     use_mask = 'pixel-aware fusion' in use_constraints
     use_ada = 'color-aware AdaIN' in use_constraints
@@ -189,7 +191,9 @@ def create_cfg(input_path, prompt, image_resolution, control_strength,
         mask_strength=mask_strength,
         inner_strength=inner_strength,
         smooth_boundary=smooth_boundary,
-        color_preserve=color_preserve)
+        color_preserve=color_preserve,
+        loose_cfattn=loose_cfattn,
+        freeu_args=[b1, b2, s1, s2])
     return cfg
 
 
@@ -212,7 +216,7 @@ def cfg_to_input(filename):
         cfg.x0_strength, use_constraints, *cfg.cross_period,
         cfg.style_update_freq, *cfg.warp_period, *cfg.mask_period,
         *cfg.ada_period, cfg.mask_strength, cfg.inner_strength,
-        cfg.smooth_boundary
+        cfg.smooth_boundary, cfg.loose_cfattn, *cfg.freeu_args
     ]
     return args
 
@@ -255,10 +259,10 @@ def process1(*args):
     global global_video_path
     cfg = create_cfg(global_video_path, *args)
     global global_state
-    global_state.update_sd_model(cfg.sd_model, cfg.control_type)
+    global_state.update_sd_model(cfg.sd_model, cfg.control_type, cfg.freeu_args)
     global_state.update_controller(cfg.inner_strength, cfg.mask_period,
                                    cfg.cross_period, cfg.ada_period,
-                                   cfg.warp_period)
+                                   cfg.warp_period, cfg.loose_cfattn)
     global_state.update_detector(cfg.control_type, cfg.canny_low,
                                  cfg.canny_high)
     global_state.processing_state = ProcessingState.FIRST_IMG
@@ -369,7 +373,7 @@ def process2(*args):
                        ' all key images')
 
     cfg = create_cfg(global_video_path, *args)
-    global_state.update_sd_model(cfg.sd_model, cfg.control_type)
+    global_state.update_sd_model(cfg.sd_model, cfg.control_type, cfg.freeu_args)
     global_state.update_detector(cfg.control_type, cfg.canny_low,
                                  cfg.canny_high)
     global_state.processing_state = ProcessingState.KEY_IMGS
@@ -724,6 +728,29 @@ with block:
                     value=('longbody, lowres, bad anatomy, bad hands, '
                            'missing fingers, extra digit, fewer digits, '
                            'cropped, worst quality, low quality'))
+                with gr.Row():
+                    b1 = gr.Slider(label='FreeU first-stage backbone factor',
+                                          minimum=1,
+                                          maximum=1.6,
+                                          value=1,
+                                          step=0.01,
+                                  info='FreeU to enhance texture and color')
+                    b2 = gr.Slider(label='FreeU second-stage backbone factor',
+                                           minimum=1,
+                                           maximum=1.6,
+                                           value=1,
+                                           step=0.01)
+                with gr.Row():
+                    s1 = gr.Slider(label='FreeU first-stage skip factor',
+                                         minimum=0,
+                                         maximum=1,
+                                         value=1,
+                                         step=0.01)
+                    s2 = gr.Slider(label='FreeU second-stage skip factor',
+                                            minimum=0,
+                                            maximum=1,
+                                            value=1,
+                                            step=0.01)                               
             with gr.Accordion('Advanced options for the key fame translation',
                               open=False):
                 interval = gr.Slider(
@@ -769,6 +796,10 @@ with block:
                     step=1,
                     info=('Update the key and value for '
                           'cross-frame attention every N key frames'))
+                loose_cfattn = gr.Checkbox(
+                    label='Loose Cross-frame attention',
+                    value=True,
+                    info='Select to make output better match the input video')
                 with gr.Row():
                     warp_start = gr.Slider(label='Shape-aware fusion start',
                                            minimum=0,
@@ -834,7 +865,8 @@ with block:
 
             with gr.Accordion('Example configs', open=True):
                 config_dir = 'config'
-                config_list = os.listdir(config_dir)
+                config_list = ['real2sculpture.json', 'van_gogh_man.json', 
+                               'woman.json']
                 args_list = []
                 for config in config_list:
                     try:
@@ -853,7 +885,7 @@ with block:
                     x0_strength, use_constraints[0], cross_start, cross_end,
                     style_update_freq, warp_start, warp_end, mask_start,
                     mask_end, ada_start, ada_end, mask_strength,
-                    inner_strength, smooth_boundary
+                    inner_strength, smooth_boundary, loose_cfattn, b1, b2, s1, s2
                 ]
 
                 gr.Examples(
@@ -927,4 +959,4 @@ with block:
     run_button2.click(fn=process2, inputs=ips, outputs=[result_keyframe])
     run_button3.click(fn=process3, inputs=ips_process3, outputs=[result_video])
 
-block.launch(server_name='0.0.0.0')
+block.launch(server_name='localhost')

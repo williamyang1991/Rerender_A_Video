@@ -22,13 +22,14 @@ in SIGGRAPH Asia 2023 Conference Proceedings <br>
 https://github.com/williamyang1991/Rerender_A_Video/assets/18130694/811fdea3-f0da-49c9-92b8-2d2ad360f0d6
 
 ## Updates
-
+- [10/2023] New features: [Loose cross-frame attention](#loose-cross-frame-attention) and [FreeU](#freeu).
 - [09/2023] Code is released.
 - [09/2023] Accepted to SIGGRAPH Asia 2023 Conference Proceedings!
 - [06/2023] Integrated to 🤗 [Hugging Face](https://huggingface.co/spaces/Anonymous-sub/Rerender). Enjoy the web demo!
 - [05/2023] This website is created.
 
 ### TODO
+- [x] Integrate [FreeU](https://github.com/ChenyangSi/FreeU) into Rerender
 - [x] Integrate into Diffusers.
 - [x] ~~Add Inference instructions in README.md.~~
 - [x] ~~Add Examples to webUI.~~
@@ -81,8 +82,8 @@ python rerender.py --cfg config/real2sculpture.json
 3. Install [VS](https://visualstudio.microsoft.com/) with Windows 10/11 SDK (for building deps/ebsynth/bin/ebsynth.exe)
 </details>
 
-<details>
-<summary>Installation or Running Fails?</summary>
+<details id="issues">
+<summary>🔥🔥🔥 <b>Installation or Running Fails?</b> 🔥🔥🔥</summary>
 
 1. In case building ebsynth fails, we provides our complied [ebsynth](https://drive.google.com/drive/folders/1oSB3imKwZGz69q2unBUfcgmQpzwccoyD?usp=sharing)
 2. `FileNotFoundError: [Errno 2] No such file or directory: 'xxxx.bin' or 'xxxx.jpg'`:
@@ -119,7 +120,7 @@ Upload your video, input the prompt, select the seed, and hit:
 
 We provide abundant advanced options to play with
 
-<details>
+<details id="option0">
 <summary> <b>Using customized models</b></summary>
 
 - Using LoRA/Dreambooth/Finetuned/Mixed SD models
@@ -133,7 +134,7 @@ We provide abundant advanced options to play with
   
 </details>
 
-<details>
+<details id="option1">
 <summary> <b>Advanced options for the 1st frame translation</b></summary>
 
 1. Resolution related (**Frame resolution**, **left/top/right/bottom crop length**): crop the frame and resize its short side to 512.
@@ -152,10 +153,13 @@ We provide abundant advanced options to play with
      - [revAnimated_v11](https://civitai.com/models/7371/rev-animated?modelVersionId=19575): a semi-realistic (2.5D) model
      - [realisticVisionV20_v20](https://civitai.com/models/4201?modelVersionId=29460): a photo-realistic model
    - **Added prompt/Negative prompt**: supplementary prompts
+5. FreeU related:
+   - **FreeU first/second-stage backbone factor**: =1 do nothing; >1 enhance output color and details
+   - **FreeU first/second-stage skip factor**: =1 do nothing; <1 enhance output color and details
 
 </details>
 
-<details>
+<details id="option2">
 <summary> <b>Advanced options for the key frame translation</b></summary>
 
 1. Key frame related
@@ -165,6 +169,7 @@ We provide abundant advanced options to play with
    - Cross-frame attention: 
      - **Cross-frame attention start/end**: When applying cross-frame attention for global style consistency
      - **Cross-frame attention update frequency (N)**: Update the reference style frame every N key frames. Should be large for long videos to avoid error accumulation.
+     - **Loose Cross-frame attention**: Using cross-frame attention in fewer layers to better match the input video (for video with large motions)
    - **Shape-aware fusion** Check to use this feature 
      - **Shape-aware fusion start/end**: When applying shape-aware fusion for local shape consistency
    - **Pixel-aware fusion** Check to use this feature 
@@ -177,7 +182,7 @@ We provide abundant advanced options to play with
 
 </details>
 
-<details>
+<details id="option3">
 <summary> <b>Advanced options for the full video translation</b></summary>
   
 1. **Gradient blending**: apply Poisson Blending to reduce ghosting artifacts. May slow the process and increase flickers.
@@ -332,7 +337,17 @@ Video stylization and video editing.
 
 https://github.com/williamyang1991/Rerender_A_Video/assets/18130694/1b72585c-99c0-401d-b240-5b8016df7a3f
 
+## New Features
 
+Compared to the conference version, we are keeping adding new features.
+
+![new_feature](https://github.com/williamyang1991/Rerender_A_Video/assets/18130694/d17f183f-4955-4516-b1c9-d612c5331b4e)
+
+#### Loose cross-frame attention
+By using cross-frame attention in less layers, our results will better match the input video, thus reducing ghosting artifacts caused by inconsistencies. This feature can be activated by checking `Loose Cross-frame attention` in the <a href="#option2">Advanced options for the key frame translation</a> for WebUI or setting `loose_cfattn` for script (see `config/real2sculpture_loose_cfattn.json`).
+
+#### FreeU
+[FreeU](https://github.com/ChenyangSi/FreeU) is a method that improves diffusion model sample quality at no costs. We find featured with FreeU, our results will have higher contrast and saturation, richer details, and more vivid colors. This feature can be used by setting FreeU backbone factors and skip factors in the <a href="#option1">Advanced options for the 1st frame translation</a> for WebUI or setting `freeu_args` for script (see `config/real2sculpture_freeu.json`).
 
 ## Citation
 
