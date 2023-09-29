@@ -82,7 +82,7 @@ python rerender.py --cfg config/real2sculpture.json
 3. Install [VS](https://visualstudio.microsoft.com/) with Windows 10/11 SDK (for building deps/ebsynth/bin/ebsynth.exe)
 </details>
 
-<details>
+<details id="issues">
 <summary>🔥🔥🔥 <b>Installation or Running Fails?</b> 🔥🔥🔥</summary>
 
 1. In case building ebsynth fails, we provides our complied [ebsynth](https://drive.google.com/drive/folders/1oSB3imKwZGz69q2unBUfcgmQpzwccoyD?usp=sharing)
@@ -120,7 +120,7 @@ Upload your video, input the prompt, select the seed, and hit:
 
 We provide abundant advanced options to play with
 
-<details>
+<details id="option0">
 <summary> <b>Using customized models</b></summary>
 
 - Using LoRA/Dreambooth/Finetuned/Mixed SD models
@@ -154,7 +154,7 @@ We provide abundant advanced options to play with
      - [realisticVisionV20_v20](https://civitai.com/models/4201?modelVersionId=29460): a photo-realistic model
    - **Added prompt/Negative prompt**: supplementary prompts
 
-</details>
+</details id="option2">
 
 <details>
 <summary> <b>Advanced options for the key frame translation</b></summary>
@@ -178,7 +178,7 @@ We provide abundant advanced options to play with
 
 </details>
 
-<details>
+<details id="option3">
 <summary> <b>Advanced options for the full video translation</b></summary>
   
 1. **Gradient blending**: apply Poisson Blending to reduce ghosting artifacts. May slow the process and increase flickers.
@@ -337,13 +337,14 @@ https://github.com/williamyang1991/Rerender_A_Video/assets/18130694/1b72585c-99c
 
 Compared to the conference version, we are keeping adding new features.
 
-#### Loose cross-frame attention
-
-#### FreeU
-[FreeU](https://github.com/ChenyangSi/FreeU) is a method that improves diffusion model sample quality at no costs. We find featured with FreeU, our results will have higher contrast and saturation, richer details, and more vivid colors. If can be used by setting FreeU backbone factors and skip factors in the <a href="#option1">Advanced options for the 1st frame translation</a> for WebUI.
-
 ![new_feature](https://github.com/williamyang1991/Rerender_A_Video/assets/18130694/d17f183f-4955-4516-b1c9-d612c5331b4e)
 
+#### Loose cross-frame attention
+By using cross-frame attention in less layers, our results will better match the input video, thus reducing ghosting artifacts caused by inconsistencies.
+This feature can be activated by an option `loose_cfatnn=True` in `/src/controller.py` Line 24-25
+
+#### FreeU
+[FreeU](https://github.com/ChenyangSi/FreeU) is a method that improves diffusion model sample quality at no costs. We find featured with FreeU, our results will have higher contrast and saturation, richer details, and more vivid colors. This feature can be used by setting FreeU backbone factors and skip factors in the <a href="#option1">Advanced options for the 1st frame translation</a> for WebUI.
 
 ## Citation
 
