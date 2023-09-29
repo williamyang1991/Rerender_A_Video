@@ -77,7 +77,7 @@ class GlobalState:
                                            cross_period, ada_period,
                                            warp_period, loose_cfatnn=loose_cfattn)
 
-    def update_sd_model(self, sd_model, control_type):
+    def update_sd_model(self, sd_model, control_type, freeu_args):
         if sd_model == self.sd_model:
             return
         self.sd_model = sd_model
@@ -108,7 +108,7 @@ class GlobalState:
             print('Warning: We suggest you download the fine-tuned VAE',
                   'otherwise the generation quality will be degraded')
         
-        model.model.diffusion_model.forward = freeu_forward(model.model.diffusion_model, 1., 1., 1., 1.)
+        model.model.diffusion_model.forward = freeu_forward(model.model.diffusion_model, *freeu_args)
         self.ddim_v_sampler = DDIMVSampler(model)
 
     def clear_sd_model(self):
@@ -259,7 +259,7 @@ def process1(*args):
     global global_video_path
     cfg = create_cfg(global_video_path, *args)
     global global_state
-    global_state.update_sd_model(cfg.sd_model, cfg.control_type)
+    global_state.update_sd_model(cfg.sd_model, cfg.control_type, cfg.freeu_args)
     global_state.update_controller(cfg.inner_strength, cfg.mask_period,
                                    cfg.cross_period, cfg.ada_period,
                                    cfg.warp_period, cfg.loose_cfattn)
@@ -373,7 +373,7 @@ def process2(*args):
                        ' all key images')
 
     cfg = create_cfg(global_video_path, *args)
-    global_state.update_sd_model(cfg.sd_model, cfg.control_type)
+    global_state.update_sd_model(cfg.sd_model, cfg.control_type, cfg.freeu_args)
     global_state.update_detector(cfg.control_type, cfg.canny_low,
                                  cfg.canny_high)
     global_state.processing_state = ProcessingState.KEY_IMGS
@@ -959,4 +959,4 @@ with block:
     run_button2.click(fn=process2, inputs=ips, outputs=[result_keyframe])
     run_button3.click(fn=process3, inputs=ips_process3, outputs=[result_video])
 
-block.launch(server_name='0.0.0.0', share=True)
+block.launch(server_name='localhost')
