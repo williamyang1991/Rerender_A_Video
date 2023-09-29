@@ -340,7 +340,7 @@ Compared to the conference version, we are keeping adding new features.
 #### Loose cross-frame attention
 
 #### FreeU
-[FreeU](https://github.com/ChenyangSi/FreeU) is a method that improves diffusion model sample quality at no costs. We find featured with FreeU, our results will have higher contrast and saturation, richer details, and more vivid colors. If can be used by setting FreeU backbone factors and skip factors in the <a href="option1">Advanced options for the 1st frame translation</a> for WebUI.
+[FreeU](https://github.com/ChenyangSi/FreeU) is a method that improves diffusion model sample quality at no costs. We find featured with FreeU, our results will have higher contrast and saturation, richer details, and more vivid colors. If can be used by setting FreeU backbone factors and skip factors in the <a href="#option1">Advanced options for the 1st frame translation</a> for WebUI.
 
 ![new_feature](https://github.com/williamyang1991/Rerender_A_Video/assets/18130694/d17f183f-4955-4516-b1c9-d612c5331b4e)
 
