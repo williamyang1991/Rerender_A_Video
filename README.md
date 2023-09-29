@@ -158,7 +158,6 @@ We provide abundant advanced options to play with
    - **FreeU first/second-stage skip factor**: =1 do nothing; <1 enhance output color and details
 
 </details id="option2">
-
 <details>
 <summary> <b>Advanced options for the key frame translation</b></summary>
 
