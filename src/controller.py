@@ -22,7 +22,7 @@ def calc_mean_std(feat, eps=1e-5):
 class AttentionControl():
 
     def __init__(self, inner_strength, mask_period, cross_period, ada_period,
-                 warp_period, loose_cfatnn=True):
+                 warp_period, loose_cfatnn=False):
         self.step_store = self.get_empty_store()
         self.cur_step = 0
         self.total_step = 0

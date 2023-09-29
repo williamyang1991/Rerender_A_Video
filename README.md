@@ -341,10 +341,10 @@ Compared to the conference version, we are keeping adding new features.
 
 #### Loose cross-frame attention
 By using cross-frame attention in less layers, our results will better match the input video, thus reducing ghosting artifacts caused by inconsistencies.
-This feature can be activated by an option `loose_cfatnn=True` in `/src/controller.py` Line 24-25
+This feature can be activated by setting `loose_cfattn` in config file. See `config/real2sculpture_loose_cfattn.json`.
 
 #### FreeU
-[FreeU](https://github.com/ChenyangSi/FreeU) is a method that improves diffusion model sample quality at no costs. We find featured with FreeU, our results will have higher contrast and saturation, richer details, and more vivid colors. This feature can be used by setting FreeU backbone factors and skip factors in the <a href="#option1">Advanced options for the 1st frame translation</a> for WebUI.
+[FreeU](https://github.com/ChenyangSi/FreeU) is a method that improves diffusion model sample quality at no costs. We find featured with FreeU, our results will have higher contrast and saturation, richer details, and more vivid colors. This feature can be used by setting FreeU backbone factors and skip factors in the <a href="#option1">Advanced options for the 1st frame translation</a> for WebUI or setting `freeu_args` for script (see `config/real2sculpture_freeu.json`).
 
 ## Citation
 
