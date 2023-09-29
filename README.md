@@ -83,7 +83,7 @@ python rerender.py --cfg config/real2sculpture.json
 </details>
 
 <details>
-<summary>Installation or Running Fails?</summary>
+<summary>🔥🔥🔥 <b>Installation or Running Fails?</b> 🔥🔥🔥</summary>
 
 1. In case building ebsynth fails, we provides our complied [ebsynth](https://drive.google.com/drive/folders/1oSB3imKwZGz69q2unBUfcgmQpzwccoyD?usp=sharing)
 2. `FileNotFoundError: [Errno 2] No such file or directory: 'xxxx.bin' or 'xxxx.jpg'`:
@@ -134,7 +134,7 @@ We provide abundant advanced options to play with
   
 </details>
 
-<details>
+<details id="option1">
 <summary> <b>Advanced options for the 1st frame translation</b></summary>
 
 1. Resolution related (**Frame resolution**, **left/top/right/bottom crop length**): crop the frame and resize its short side to 512.
@@ -333,6 +333,16 @@ Video stylization and video editing.
 
 https://github.com/williamyang1991/Rerender_A_Video/assets/18130694/1b72585c-99c0-401d-b240-5b8016df7a3f
 
+## New Features
+
+Compared to the conference version, we are keeping adding new features.
+
+#### Loose cross-frame attention
+
+#### FreeU
+[FreeU](https://github.com/ChenyangSi/FreeU) is a method that improves diffusion model sample quality at no costs. We find featured with FreeU, our results will have higher contrast and saturation, richer details, and more vivid colors. If can be used by setting FreeU backbone factors and skip factors in the <a href="option1">Advanced options for the 1st frame translation</a> for WebUI.
+
+![new_feature](https://github.com/williamyang1991/Rerender_A_Video/assets/18130694/d17f183f-4955-4516-b1c9-d612c5331b4e)
 
 
 ## Citation
