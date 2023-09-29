@@ -22,7 +22,7 @@ in SIGGRAPH Asia 2023 Conference Proceedings <br>
 https://github.com/williamyang1991/Rerender_A_Video/assets/18130694/811fdea3-f0da-49c9-92b8-2d2ad360f0d6
 
 ## Updates
-- [10/2023] [New features](#new-features): [Loose cross-frame attention](#loose-cross-frame-attention) and [FreeU](#freeu).
+- [10/2023] New features: [Loose cross-frame attention](#loose-cross-frame-attention) and [FreeU](#freeu).
 - [09/2023] Code is released.
 - [09/2023] Accepted to SIGGRAPH Asia 2023 Conference Proceedings!
 - [06/2023] Integrated to 🤗 [Hugging Face](https://huggingface.co/spaces/Anonymous-sub/Rerender). Enjoy the web demo!
