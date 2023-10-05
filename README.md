@@ -56,6 +56,7 @@ pip install -r requirements.txt
 You can also create a new conda environment from scratch.
 
 ```shell
+conda update -n base -c defaults conda
 conda env create -f environment.yml
 conda activate rerender
 ```
