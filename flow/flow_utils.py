@@ -1,6 +1,7 @@
 import os
 import sys
 
+import cv2
 import numpy as np
 import torch
 import torch.nn.functional as F
@@ -161,6 +162,7 @@ class FlowCalc():
 
     @torch.no_grad()
     def get_flow(self, image1, image2, save_path=None):
+
         if save_path is not None and os.path.exists(save_path):
             bwd_flow = read_flow(save_path)
             return bwd_flow
@@ -176,12 +178,52 @@ class FlowCalc():
                                   prop_radius_list=[-1],
                                   pred_bidir_flow=True)
         flow_pr = results_dict['flow_preds'][-1]  # [B, 2, H, W]
+        fwd_flow = padder.unpad(flow_pr[0]).unsqueeze(0)  # [1, 2, H, W]
         bwd_flow = padder.unpad(flow_pr[1]).unsqueeze(0)  # [1, 2, H, W]
+        fwd_occ, bwd_occ = forward_backward_consistency_check(
+            fwd_flow, bwd_flow)  # [1, H, W] float
         if save_path is not None:
             flow_np = bwd_flow.cpu().numpy()
             np.save(save_path, flow_np)
+            mask_path = os.path.splitext(save_path)[0] + '.png'
+            bwd_occ = bwd_occ.cpu().permute(1, 2, 0).to(
+                torch.long).numpy() * 255
+            cv2.imwrite(mask_path, bwd_occ)
 
         return bwd_flow
+
+    @torch.no_grad()
+    def get_mask(self, image1, image2, save_path=None):
+
+        if save_path is not None:
+            mask_path = os.path.splitext(save_path)[0] + '.png'
+            if os.path.exists(mask_path):
+                return read_mask(mask_path)
+
+        image1 = torch.from_numpy(image1).permute(2, 0, 1).float()
+        image2 = torch.from_numpy(image2).permute(2, 0, 1).float()
+        padder = InputPadder(image1.shape, padding_factor=8)
+        image1, image2 = padder.pad(image1[None].cuda(), image2[None].cuda())
+        results_dict = self.model(image1,
+                                  image2,
+                                  attn_splits_list=[2],
+                                  corr_radius_list=[-1],
+                                  prop_radius_list=[-1],
+                                  pred_bidir_flow=True)
+        flow_pr = results_dict['flow_preds'][-1]  # [B, 2, H, W]
+        fwd_flow = padder.unpad(flow_pr[0]).unsqueeze(0)  # [1, 2, H, W]
+        bwd_flow = padder.unpad(flow_pr[1]).unsqueeze(0)  # [1, 2, H, W]
+        fwd_occ, bwd_occ = forward_backward_consistency_check(
+            fwd_flow, bwd_flow)  # [1, H, W] float
+        if save_path is not None:
+            flow_np = bwd_flow.cpu().numpy()
+            np.save(save_path, flow_np)
+            mask_path = os.path.splitext(save_path)[0] + '.png'
+            bwd_occ = bwd_occ.cpu().permute(1, 2, 0).to(
+                torch.long).numpy() * 255
+            cv2.imwrite(mask_path, bwd_occ)
+
+        return bwd_occ
 
     def warp(self, img, flow, mode='bilinear'):
         expand = False
@@ -204,6 +246,13 @@ def read_flow(save_path):
     flow_np = np.load(save_path)
     bwd_flow = torch.from_numpy(flow_np)
     return bwd_flow
+
+
+def read_mask(save_path):
+    mask_path = os.path.splitext(save_path)[0] + '.png'
+    mask = cv2.imread(mask_path)
+    mask = cv2.cvtColor(mask, cv2.COLOR_BGR2GRAY)
+    return mask
 
 
 flow_calc = FlowCalc()

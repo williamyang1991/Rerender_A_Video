@@ -96,7 +96,7 @@ python rerender.py --cfg config/real2sculpture.json
 8. `CUDA out of memory`: (https://github.com/williamyang1991/Rerender_A_Video/pull/23#issue-1900789461)
 9. `AttributeError: module 'keras.backend' has no attribute 'is_tensor'`: update einops (https://github.com/williamyang1991/Rerender_A_Video/issues/26#issuecomment-1726682446)
 10. `IndexError: list index out of range`: use the original DDIM steps of 20 (https://github.com/williamyang1991/Rerender_A_Video/issues/30#issuecomment-1729039779)
- 
+
 </details>
 
 
@@ -130,8 +130,8 @@ We provide abundant advanced options to play with
   - Add more options like `control_type = gr.Dropdown(['HED', 'canny', 'depth']` here https://github.com/williamyang1991/Rerender_A_Video/blob/b6cafb5d80a79a3ef831c689ffad92ec095f2794/webUI.py#L690
   - Add model loading options like `elif control_type == 'depth':` following https://github.com/williamyang1991/Rerender_A_Video/blob/b6cafb5d80a79a3ef831c689ffad92ec095f2794/webUI.py#L88
   - Add model detectors like `elif control_type == 'depth':` following https://github.com/williamyang1991/Rerender_A_Video/blob/b6cafb5d80a79a3ef831c689ffad92ec095f2794/webUI.py#L122
-  - One example is given [here](https://huggingface.co/spaces/Anonymous-sub/Rerender/discussions/10/files) 
-  
+  - One example is given [here](https://huggingface.co/spaces/Anonymous-sub/Rerender/discussions/10/files)
+
 </details>
 
 <details id="option1">
@@ -166,25 +166,25 @@ We provide abundant advanced options to play with
    - **Key frame frequency (K)**: Uniformly sample the key frame every K frames. Small value for large or fast motions.
    - **Number of key frames (M)**: The final output video will have K*M+1 frames with M+1 key frames.
 2. Temporal consistency related
-   - Cross-frame attention: 
+   - Cross-frame attention:
      - **Cross-frame attention start/end**: When applying cross-frame attention for global style consistency
      - **Cross-frame attention update frequency (N)**: Update the reference style frame every N key frames. Should be large for long videos to avoid error accumulation.
      - **Loose Cross-frame attention**: Using cross-frame attention in fewer layers to better match the input video (for video with large motions)
-   - **Shape-aware fusion** Check to use this feature 
+   - **Shape-aware fusion** Check to use this feature
      - **Shape-aware fusion start/end**: When applying shape-aware fusion for local shape consistency
-   - **Pixel-aware fusion** Check to use this feature 
+   - **Pixel-aware fusion** Check to use this feature
      - **Pixel-aware fusion start/end**: When applying pixel-aware fusion for pixel-level temporal consistency
      - **Pixel-aware fusion strength**: The strength to preserve the non-inpainting region. Small to avoid error accumulation. Large to avoid burry textures.
      - **Pixel-aware fusion detail level**: The strength to sharpen the inpainting region. Small to avoid error accumulation. Large to avoid burry textures.
      - **Smooth fusion boundary**: Check to smooth the inpainting boundary (avoid error accumulation).
-   - **Color-aware AdaIN** Check to use this feature 
+   - **Color-aware AdaIN** Check to use this feature
      - **Color-aware AdaIN start/end**: When applying AdaIN to make the video color consistent with the first frame
 
 </details>
 
 <details id="option3">
 <summary> <b>Advanced options for the full video translation</b></summary>
-  
+
 1. **Gradient blending**: apply Poisson Blending to reduce ghosting artifacts. May slow the process and increase flickers.
 2. **Number of parallel processes**: multiprocessing to speed up the process. Large value (8) is recommended.
 </details>
@@ -214,9 +214,9 @@ Set the options via a config file. For example,
 python rerender.py --cfg config/van_gogh_man.json
 ```
 
-The script will run the full pipeline. 
-We provide some examples of the config in `config` directory. 
-Most options in the config is the same as those in WebUI. 
+The script will run the full pipeline.
+We provide some examples of the config in `config` directory.
+Most options in the config is the same as those in WebUI.
 Please check the explanations in the WebUI section.
 
 Specifying customized models by setting `sd_model` in config. For example:
@@ -245,9 +245,9 @@ python rerender.py --cfg config/van_gogh_man.json -nr
 
 #### Our Ebsynth implementation
 
-We provide a separate Ebsynth python script `video_blend.py` with the temporal blending algorithm introduced in 
-[Stylizing Video by Example](https://dcgi.fel.cvut.cz/home/sykorad/ebsynth.html) for interpolating style between key frames. 
-It can work on your own stylized key frames independently of our Rerender algorithm. 
+We provide a separate Ebsynth python script `video_blend.py` with the temporal blending algorithm introduced in
+[Stylizing Video by Example](https://dcgi.fel.cvut.cz/home/sykorad/ebsynth.html) for interpolating style between key frames.
+It can work on your own stylized key frames independently of our Rerender algorithm.
 
 Usage:
 ```shell
