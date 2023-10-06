@@ -76,10 +76,18 @@ python rerender.py --cfg config/real2sculpture.json
 <details>
 <summary>Installation on Windows</summary>
 
-  Before running the above 1-4 steps, you need prepare:
+  Before running the above 1-4 steps, you need to prepare:
 1. Install [CUDA](https://developer.nvidia.com/cuda-toolkit-archive)
 2. Install [git](https://git-scm.com/download/win)
 3. Install [VS](https://visualstudio.microsoft.com/) with Windows 10/11 SDK (for building deps/ebsynth/bin/ebsynth.exe)
+
+Additionally, to avoid CUDA out of memory errors, install xformers:
+
+```shell
+pip install xformers==0.0.16
+# install compatible version of pytorch
+pip install torch==1.13.1+cu117 torchvision==0.14.1+cu117 torchaudio==0.13.1 --extra-index-url https://download.pytorch.org/whl/cu117
+```  
 </details>
 
 <details id="issues">
