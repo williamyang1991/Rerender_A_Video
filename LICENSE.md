@@ -1,4 +1,4 @@
-# S-Lab License 1.0  
+# S-Lab License 1.0
 
 Copyright 2023 S-Lab
 

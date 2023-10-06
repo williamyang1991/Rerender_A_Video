@@ -26,10 +26,10 @@ from sd_model_cfg import model_dict
 from src.config import RerenderConfig
 from src.controller import AttentionControl
 from src.ddim_v_hacked import DDIMVSampler
+from src.freeu import freeu_forward
 from src.img_util import find_flat_region, numpy2tensor
 from src.video_util import (frame_to_video, get_fps, get_frame_count,
                             prepare_frames)
-from src.freeu import freeu_forward
 
 inversed_model_dict = dict()
 for k, v in model_dict.items():
@@ -73,9 +73,12 @@ class GlobalState:
 
     def update_controller(self, inner_strength, mask_period, cross_period,
                           ada_period, warp_period, loose_cfattn):
-        self.controller = AttentionControl(inner_strength, mask_period,
-                                           cross_period, ada_period,
-                                           warp_period, loose_cfatnn=loose_cfattn)
+        self.controller = AttentionControl(inner_strength,
+                                           mask_period,
+                                           cross_period,
+                                           ada_period,
+                                           warp_period,
+                                           loose_cfatnn=loose_cfattn)
 
     def update_sd_model(self, sd_model, control_type, freeu_args):
         if sd_model == self.sd_model:
@@ -107,8 +110,9 @@ class GlobalState:
         except Exception:
             print('Warning: We suggest you download the fine-tuned VAE',
                   'otherwise the generation quality will be degraded')
-        
-        model.model.diffusion_model.forward = freeu_forward(model.model.diffusion_model, *freeu_args)
+
+        model.model.diffusion_model.forward = freeu_forward(
+            model.model.diffusion_model, *freeu_args)
         self.ddim_v_sampler = DDIMVSampler(model)
 
     def clear_sd_model(self):
@@ -259,7 +263,8 @@ def process1(*args):
     global global_video_path
     cfg = create_cfg(global_video_path, *args)
     global global_state
-    global_state.update_sd_model(cfg.sd_model, cfg.control_type, cfg.freeu_args)
+    global_state.update_sd_model(cfg.sd_model, cfg.control_type,
+                                 cfg.freeu_args)
     global_state.update_controller(cfg.inner_strength, cfg.mask_period,
                                    cfg.cross_period, cfg.ada_period,
                                    cfg.warp_period, cfg.loose_cfattn)
@@ -373,7 +378,8 @@ def process2(*args):
                        ' all key images')
 
     cfg = create_cfg(global_video_path, *args)
-    global_state.update_sd_model(cfg.sd_model, cfg.control_type, cfg.freeu_args)
+    global_state.update_sd_model(cfg.sd_model, cfg.control_type,
+                                 cfg.freeu_args)
     global_state.update_detector(cfg.control_type, cfg.canny_low,
                                  cfg.canny_high)
     global_state.processing_state = ProcessingState.KEY_IMGS
@@ -730,27 +736,27 @@ with block:
                            'cropped, worst quality, low quality'))
                 with gr.Row():
                     b1 = gr.Slider(label='FreeU first-stage backbone factor',
-                                          minimum=1,
-                                          maximum=1.6,
-                                          value=1,
-                                          step=0.01,
-                                  info='FreeU to enhance texture and color')
+                                   minimum=1,
+                                   maximum=1.6,
+                                   value=1,
+                                   step=0.01,
+                                   info='FreeU to enhance texture and color')
                     b2 = gr.Slider(label='FreeU second-stage backbone factor',
-                                           minimum=1,
-                                           maximum=1.6,
-                                           value=1,
-                                           step=0.01)
+                                   minimum=1,
+                                   maximum=1.6,
+                                   value=1,
+                                   step=0.01)
                 with gr.Row():
                     s1 = gr.Slider(label='FreeU first-stage skip factor',
-                                         minimum=0,
-                                         maximum=1,
-                                         value=1,
-                                         step=0.01)
+                                   minimum=0,
+                                   maximum=1,
+                                   value=1,
+                                   step=0.01)
                     s2 = gr.Slider(label='FreeU second-stage skip factor',
-                                            minimum=0,
-                                            maximum=1,
-                                            value=1,
-                                            step=0.01)                               
+                                   minimum=0,
+                                   maximum=1,
+                                   value=1,
+                                   step=0.01)
             with gr.Accordion('Advanced options for the key fame translation',
                               open=False):
                 interval = gr.Slider(
@@ -865,8 +871,9 @@ with block:
 
             with gr.Accordion('Example configs', open=True):
                 config_dir = 'config'
-                config_list = ['real2sculpture.json', 'van_gogh_man.json', 
-                               'woman.json']
+                config_list = [
+                    'real2sculpture.json', 'van_gogh_man.json', 'woman.json'
+                ]
                 args_list = []
                 for config in config_list:
                     try:
@@ -885,7 +892,8 @@ with block:
                     x0_strength, use_constraints[0], cross_start, cross_end,
                     style_update_freq, warp_start, warp_end, mask_start,
                     mask_end, ada_start, ada_end, mask_strength,
-                    inner_strength, smooth_boundary, loose_cfattn, b1, b2, s1, s2
+                    inner_strength, smooth_boundary, loose_cfattn, b1, b2, s1,
+                    s2
                 ]
 
                 gr.Examples(

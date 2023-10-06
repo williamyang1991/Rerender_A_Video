@@ -3,7 +3,7 @@ import os
 import cv2
 import numpy as np
 
-from flow.flow_utils import flow_calc, read_flow
+from flow.flow_utils import flow_calc, read_flow, read_mask
 
 
 class BaseGuide:
@@ -25,24 +25,19 @@ class ColorGuide(BaseGuide):
 
 class PositionalGuide(BaseGuide):
 
-    def __init__(self, flows, save_paths):
+    def __init__(self, flow_paths, save_paths):
         super().__init__()
-        flows = [read_flow(f) for f in flows]
+        flows = [read_flow(f) for f in flow_paths]
+        masks = [read_mask(f) for f in flow_paths]
         # TODO: modify the format of flow to numpy
         H, W = flows[0].shape[2:]
         first_img = PositionalGuide.__generate_first_img(H, W)
         prev_img = first_img
         imgs = [first_img]
         cid = 0
-        for flow in flows:
+        for flow, mask in zip(flows, masks):
             cur_img = flow_calc.warp(prev_img, flow,
                                      'nearest').astype(np.uint8)
-
-            gray = cur_img[:, :, 1].astype(np.float32)
-            gray += cur_img[:, :, 2]
-            gray /= 2
-            _, mask = cv2.threshold(gray, 20, 255, cv2.THRESH_BINARY_INV)
-            mask = mask.astype(np.uint8)
             cur_img = cv2.inpaint(cur_img, mask, 30, cv2.INPAINT_TELEA)
             prev_img = cur_img
             imgs.append(cur_img)
@@ -83,9 +78,10 @@ class EdgeGuide(BaseGuide):
 
 class TemporalGuide(BaseGuide):
 
-    def __init__(self, key_img, stylized_imgs, flows, save_paths):
+    def __init__(self, key_img, stylized_imgs, flow_paths, save_paths):
         super().__init__()
-        self.flows = [read_flow(f) for f in flows]
+        self.flows = [read_flow(f) for f in flow_paths]
+        self.masks = [read_mask(f) for f in flow_paths]
         self.stylized_imgs = stylized_imgs
         self.imgs = save_paths
 
@@ -100,13 +96,8 @@ class TemporalGuide(BaseGuide):
             warped_img = flow_calc.warp(prev_img, self.flows[i - 1],
                                         'nearest').astype(np.uint8)
 
-            gray = warped_img[:, :, 0].astype(np.float32)
-            gray += warped_img[:, :, 1]
-            gray += warped_img[:, :, 2]
-            gray /= 3
-            _, mask = cv2.threshold(gray, 20, 255, cv2.THRESH_BINARY_INV)
-            mask = mask.astype(np.uint8)
-            warped_img = cv2.inpaint(warped_img, mask, 30, cv2.INPAINT_TELEA)
+            warped_img = cv2.inpaint(warped_img, self.masks[i - 1], 30,
+                                     cv2.INPAINT_TELEA)
 
             cv2.imwrite(self.imgs[i], warped_img)
 
