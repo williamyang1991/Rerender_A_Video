@@ -1,6 +1,7 @@
 import os
 
 import cv2
+import torch
 import imageio
 import numpy as np
 
@@ -74,9 +75,16 @@ def resize_image(input_image, resolution):
     H, W, C = input_image.shape
     H = float(H)
     W = float(W)
+    aspect_ratio = W / H
     k = float(resolution) / min(H, W)
     H *= k
     W *= k
+    if H < W:
+        W = resolution
+        H = int(resolution / aspect_ratio)
+    else:
+        H = resolution
+        W = int(aspect_ratio * resolution)
     H = int(np.round(H / 64.0)) * 64
     W = int(np.round(W / 64.0)) * 64
     img = cv2.resize(
@@ -85,8 +93,11 @@ def resize_image(input_image, resolution):
     return img
 
 
-def prepare_frames(input_path: str, output_dir: str, resolution: int, crop):
+def prepare_frames(input_path: str, output_dir: str, resolution: int, crop, use_limit_device_resolution=False):
     l, r, t, b = crop
+
+    if use_limit_device_resolution:
+        resolution = vram_limit_device_resolution(resolution)
 
     def crop_func(frame):
         H, W, C = frame.shape
@@ -98,3 +109,16 @@ def prepare_frames(input_path: str, output_dir: str, resolution: int, crop):
         return resize_image(frame, resolution)
 
     video_to_frame(input_path, output_dir, '%04d.png', False, crop_func)
+
+
+def vram_limit_device_resolution(resolution, device="cuda"):
+    # get max limit target size
+    gpu_vram = torch.cuda.get_device_properties(device).total_memory / (1024 ** 3)
+    print(gpu_vram)
+    # table of gpu memory limit
+    gpu_table = {24: 1280, 18: 1024, 14: 768, 10: 640, 8: 576, 7: 512, 6: 448, 5: 320, 4: 192}
+    # get user resize for gpu
+    device_resolution = max(val for key, val in gpu_table.items() if key <= gpu_vram)
+    if resolution < device_resolution:
+        return resolution
+    return device_resolution
