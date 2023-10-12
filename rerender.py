@@ -56,8 +56,7 @@ def apply_color_correction(correction, original_image):
 def rerender(cfg: RerenderConfig, first_img_only: bool, key_video_path: str):
 
     # Preprocess input
-    prepare_frames(cfg.input_path, cfg.input_dir, cfg.image_resolution,
-                   cfg.crop)
+    prepare_frames(cfg.input_path, cfg.input_dir, cfg.image_resolution, cfg.crop, cfg.use_limit_device_resolution)
 
     # Load models
     if cfg.control_type == 'HED':
