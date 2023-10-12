@@ -272,8 +272,7 @@ def process1(*args):
                                  cfg.canny_high)
     global_state.processing_state = ProcessingState.FIRST_IMG
 
-    prepare_frames(cfg.input_path, cfg.input_dir, cfg.image_resolution,
-                   cfg.crop)
+    prepare_frames(cfg.input_path, cfg.input_dir, cfg.image_resolution, cfg.crop, cfg.use_limit_device_resolution)
 
     ddim_v_sampler = global_state.ddim_v_sampler
     model = ddim_v_sampler.model
