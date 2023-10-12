@@ -114,11 +114,12 @@ def prepare_frames(input_path: str, output_dir: str, resolution: int, crop, use_
 def vram_limit_device_resolution(resolution, device="cuda"):
     # get max limit target size
     gpu_vram = torch.cuda.get_device_properties(device).total_memory / (1024 ** 3)
-    print(gpu_vram)
     # table of gpu memory limit
     gpu_table = {24: 1280, 18: 1024, 14: 768, 10: 640, 8: 576, 7: 512, 6: 448, 5: 320, 4: 192}
     # get user resize for gpu
     device_resolution = max(val for key, val in gpu_table.items() if key <= gpu_vram)
+    print(f"Limit VRAM is {gpu_vram} Gb.")
     if resolution < device_resolution:
+        print(f"Video will resize before {device_resolution} for max size")
         return resolution
     return device_resolution
