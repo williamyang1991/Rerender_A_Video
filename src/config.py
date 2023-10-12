@@ -125,6 +125,7 @@ class RerenderConfig:
         append_if_not_none('control_strength')
         append_if_not_none('seed')
         append_if_not_none('image_resolution')
+        append_if_not_none('use_limit_device_resolution')
         append_if_not_none('x0_strength')
         append_if_not_none('style_update_freq')
         append_if_not_none('cross_period')
