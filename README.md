@@ -342,7 +342,7 @@ https://github.com/williamyang1991/Rerender_A_Video/assets/18130694/1b72585c-99c
 
 Compared to the conference version, we are keeping adding new features.
 
-![new_feature](https://github.com/williamyang1991/Rerender_A_Video/assets/18130694/d17f183f-4955-4516-b1c9-d612c5331b4e)
+![new_feature](https://github.com/williamyang1991/Rerender_A_Video/assets/18130694/98f39f3d-3dfe-4de4-a1b6-99a3c78b5336)
 
 #### Loose cross-frame attention
 By using cross-frame attention in less layers, our results will better match the input video, thus reducing ghosting artifacts caused by inconsistencies. This feature can be activated by checking `Loose Cross-frame attention` in the <a href="#option2">Advanced options for the key frame translation</a> for WebUI or setting `loose_cfattn` for script (see `config/real2sculpture_loose_cfattn.json`).
