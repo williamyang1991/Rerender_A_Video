@@ -120,7 +120,7 @@ def vram_limit_device_resolution(resolution, device="cuda"):
     device_resolution = max(val for key, val in gpu_table.items() if key <= gpu_vram)
     print(f"Limit VRAM is {gpu_vram} Gb and size {device_resolution}.")
     if gpu_vram < 4:
-        print(f"Small VRAM to use GPU. Will be use config resolution")
+        print(f"Small VRAM to use GPU. Configuration resolution will be used.")
     if resolution < device_resolution:
         print(f"Video will not resize")
         return resolution
