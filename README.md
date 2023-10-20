@@ -97,7 +97,8 @@ python rerender.py --cfg config/real2sculpture.json
 8. `CUDA out of memory`: (https://github.com/williamyang1991/Rerender_A_Video/pull/23#issue-1900789461)
 9. `AttributeError: module 'keras.backend' has no attribute 'is_tensor'`: update einops (https://github.com/williamyang1991/Rerender_A_Video/issues/26#issuecomment-1726682446)
 10. `IndexError: list index out of range`: use the original DDIM steps of 20 (https://github.com/williamyang1991/Rerender_A_Video/issues/30#issuecomment-1729039779)
-11. Out of GPU memory (https://github.com/williamyang1991/Rerender_A_Video/issues/79): set `"use_limit_device_resolution"` to `ture` in the config to resize the video according to your VRAM. An example config `config/van_gogh_man_dynamic_resolution.json` is provided.
+11. One-click installation https://github.com/williamyang1991/Rerender_A_Video/issues/99
+12. Out of GPU memory (https://github.com/williamyang1991/Rerender_A_Video/issues/79): set `"use_limit_device_resolution"` to `ture` in the config to resize the video according to your VRAM. An example config `config/van_gogh_man_dynamic_resolution.json` is provided.
 
 </details>
 
@@ -343,7 +344,7 @@ https://github.com/williamyang1991/Rerender_A_Video/assets/18130694/1b72585c-99c
 
 Compared to the conference version, we are keeping adding new features.
 
-![new_feature](https://github.com/williamyang1991/Rerender_A_Video/assets/18130694/d17f183f-4955-4516-b1c9-d612c5331b4e)
+![new_feature](https://github.com/williamyang1991/Rerender_A_Video/assets/18130694/98f39f3d-3dfe-4de4-a1b6-99a3c78b5336)
 
 #### Loose cross-frame attention
 By using cross-frame attention in less layers, our results will better match the input video, thus reducing ghosting artifacts caused by inconsistencies. This feature can be activated by checking `Loose Cross-frame attention` in the <a href="#option2">Advanced options for the key frame translation</a> for WebUI or setting `loose_cfattn` for script (see `config/real2sculpture_loose_cfattn.json`).
