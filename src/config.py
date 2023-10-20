@@ -28,6 +28,7 @@ class RerenderConfig:
                                control_strength=1,
                                seed: int = -1,
                                image_resolution: int = 512,
+                               use_limit_device_resolution: bool = False,
                                x0_strength: float = -1,
                                style_update_freq: int = 10,
                                cross_period: Tuple[float, float] = (0, 1),
@@ -75,6 +76,7 @@ class RerenderConfig:
         self.control_strength = control_strength
         self.seed = seed
         self.image_resolution = image_resolution
+        self.use_limit_device_resolution = use_limit_device_resolution
         self.x0_strength = x0_strength
         self.style_update_freq = style_update_freq
         self.cross_period = cross_period
@@ -123,6 +125,7 @@ class RerenderConfig:
         append_if_not_none('control_strength')
         append_if_not_none('seed')
         append_if_not_none('image_resolution')
+        append_if_not_none('use_limit_device_resolution')
         append_if_not_none('x0_strength')
         append_if_not_none('style_update_freq')
         append_if_not_none('cross_period')

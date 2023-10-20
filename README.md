@@ -98,6 +98,7 @@ python rerender.py --cfg config/real2sculpture.json
 9. `AttributeError: module 'keras.backend' has no attribute 'is_tensor'`: update einops (https://github.com/williamyang1991/Rerender_A_Video/issues/26#issuecomment-1726682446)
 10. `IndexError: list index out of range`: use the original DDIM steps of 20 (https://github.com/williamyang1991/Rerender_A_Video/issues/30#issuecomment-1729039779)
 11. One-click installation https://github.com/williamyang1991/Rerender_A_Video/issues/99
+12. Out of GPU memory (https://github.com/williamyang1991/Rerender_A_Video/issues/79): set `"use_limit_device_resolution"` to `ture` in the config to resize the video according to your VRAM. An example config `config/van_gogh_man_dynamic_resolution.json` is provided.
 
 </details>
 
