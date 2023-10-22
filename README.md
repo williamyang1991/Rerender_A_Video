@@ -94,11 +94,12 @@ python rerender.py --cfg config/real2sculpture.json
 5. `KeyError: 'dataset'`: upgrade Gradio to the latest version (https://github.com/williamyang1991/Rerender_A_Video/issues/14#issuecomment-1722778672, https://github.com/AUTOMATIC1111/stable-diffusion-webui/issues/11855)
 6. Error when processing videos: manually install ffmpeg (https://github.com/williamyang1991/Rerender_A_Video/issues/19#issuecomment-1723685825, https://github.com/williamyang1991/Rerender_A_Video/issues/29#issuecomment-1726091112)
 7. `ERR_ADDRESS_INVALID` Cannot open the webUI in browser: replace 0.0.0.0 with 127.0.0.1 in webUI.py (https://github.com/williamyang1991/Rerender_A_Video/issues/19#issuecomment-1723685825)
-8. `CUDA out of memory`: (https://github.com/williamyang1991/Rerender_A_Video/pull/23#issue-1900789461)
-9. `AttributeError: module 'keras.backend' has no attribute 'is_tensor'`: update einops (https://github.com/williamyang1991/Rerender_A_Video/issues/26#issuecomment-1726682446)
-10. `IndexError: list index out of range`: use the original DDIM steps of 20 (https://github.com/williamyang1991/Rerender_A_Video/issues/30#issuecomment-1729039779)
-11. One-click installation https://github.com/williamyang1991/Rerender_A_Video/issues/99
-12. Out of GPU memory (https://github.com/williamyang1991/Rerender_A_Video/issues/79): set `"use_limit_device_resolution"` to `true` in the config to resize the video according to your VRAM. An example config `config/van_gogh_man_dynamic_resolution.json` is provided.
+8. `CUDA out of memory`:
+     - Using xformers (https://github.com/williamyang1991/Rerender_A_Video/pull/23#issue-1900789461)
+     - Set `"use_limit_device_resolution"` to `true` in the config to resize the video according to your VRAM (https://github.com/williamyang1991/Rerender_A_Video/issues/79). An example config `config/van_gogh_man_dynamic_resolution.json` is provided.
+10. `AttributeError: module 'keras.backend' has no attribute 'is_tensor'`: update einops (https://github.com/williamyang1991/Rerender_A_Video/issues/26#issuecomment-1726682446)
+11. `IndexError: list index out of range`: use the original DDIM steps of 20 (https://github.com/williamyang1991/Rerender_A_Video/issues/30#issuecomment-1729039779)
+12. One-click installation https://github.com/williamyang1991/Rerender_A_Video/issues/99
 
 </details>
 
