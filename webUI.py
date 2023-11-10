@@ -537,9 +537,9 @@ def process2(*args):
             else:
                 noise_rescale = torch.ones_like(mask)
             masks = []
-            for i in range(cfg.ddim_steps):
-                if i <= cfg.ddim_steps * cfg.mask_period[
-                        0] or i >= cfg.ddim_steps * cfg.mask_period[1]:
+            for j in range(cfg.ddim_steps):
+                if j <= cfg.ddim_steps * cfg.mask_period[
+                        0] or j >= cfg.ddim_steps * cfg.mask_period[1]:
                     masks += [None]
                 else:
                     masks += [mask * cfg.mask_strength]
