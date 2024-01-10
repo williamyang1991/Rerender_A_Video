@@ -22,7 +22,7 @@ in SIGGRAPH Asia 2023 Conference Proceedings <br>
 https://github.com/williamyang1991/Rerender_A_Video/assets/18130694/811fdea3-f0da-49c9-92b8-2d2ad360f0d6
 
 ## Updates
-- [12/2023] The Diffusers pipeline is available: [Rerender_A_Video Community Pipeline](https://github.com/huggingface/diffusers/pull/6332)
+- [12/2023] The Diffusers pipeline is available: [Rerender_A_Video Community Pipeline](https://github.com/huggingface/diffusers/tree/main/examples/community#Rerender_A_Video)
 - [10/2023] New features: [Loose cross-frame attention](#loose-cross-frame-attention) and [FreeU](#freeu).
 - [09/2023] Code is released.
 - [09/2023] Accepted to SIGGRAPH Asia 2023 Conference Proceedings!
