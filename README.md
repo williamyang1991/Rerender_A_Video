@@ -92,6 +92,8 @@ python rerender.py --cfg config/real2sculpture.json
     - make sure your path only contains English letters or _ (https://github.com/williamyang1991/Rerender_A_Video/issues/18#issuecomment-1723361433)
     - find the code `python video_blend.py ...` in the error log and use it to manually run the ebsynth part, which is more stable than WebUI.
     - if some non-keyframes are generated but somes are not, rather than missing all non-keyframes in '/out_xx/', you may refer to https://github.com/williamyang1991/Rerender_A_Video/issues/38#issuecomment-1730668991
+    - Enable the Execute permission of deps/ebsynth/bin/ebsynth
+    - Enable the debug log to find more information https://github.com/williamyang1991/Rerender_A_Video/blob/d32b1d6b6c1305ddd06e66868c5dcf4fb7aa048c/video_blend.py#L22 
 5. `KeyError: 'dataset'`: upgrade Gradio to the latest version (https://github.com/williamyang1991/Rerender_A_Video/issues/14#issuecomment-1722778672, https://github.com/AUTOMATIC1111/stable-diffusion-webui/issues/11855)
 6. Error when processing videos: manually install ffmpeg (https://github.com/williamyang1991/Rerender_A_Video/issues/19#issuecomment-1723685825, https://github.com/williamyang1991/Rerender_A_Video/issues/29#issuecomment-1726091112)
 7. `ERR_ADDRESS_INVALID` Cannot open the webUI in browser: replace 0.0.0.0 with 127.0.0.1 in webUI.py (https://github.com/williamyang1991/Rerender_A_Video/issues/19#issuecomment-1723685825)
